@@ -1,0 +1,28 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - network_info_plus (0.0.1):
+    - FlutterMacOS
+  - shared_preferences_macos (0.0.1):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - network_info_plus (from `Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos`)
+  - shared_preferences_macos (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/macos`)
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  network_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos
+  shared_preferences_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/macos
+
+SPEC CHECKSUMS:
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  network_info_plus: f4fbc7877ab7b3294500d9441dfa53cd54972d05
+  shared_preferences_macos: 8b221d457159a85f478c0b9d2f19aeae9feff475
+
+PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
+
+COCOAPODS: 1.11.3

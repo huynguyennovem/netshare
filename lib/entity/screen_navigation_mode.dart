@@ -1,0 +1,4 @@
+enum ScreenNavigationMode {
+  client,
+  server
+}
