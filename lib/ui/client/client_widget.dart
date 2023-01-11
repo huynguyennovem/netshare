@@ -4,6 +4,7 @@ import 'package:netshare/entity/connection_status.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/ui/client/connect_widget.dart';
 import 'package:netshare/ui/client/navigation_widget.dart';
+import 'package:netshare/util/utility_functions.dart';
 import 'package:provider/provider.dart';
 import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
@@ -37,8 +38,11 @@ class _ClientWidgetState extends State<ClientWidget> {
       final connectedIPAddress = value.connectedIPAddress;
       return Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: connectionStatus == ConnectionStatus.connected
               ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     connectionStatus == ConnectionStatus.connected
                         ? const Icon(Icons.circle, size: 12.0, color: Colors.green)
@@ -58,6 +62,17 @@ class _ClientWidgetState extends State<ClientWidget> {
                     fontSize: 18.0,
                   ),
                 ),
+          leading: UtilityFunctions.isDesktop
+              ? IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                  ),
+                )
+              : null,
           actions: [
             connectionStatus == ConnectionStatus.connected
                 ? IconButton(
