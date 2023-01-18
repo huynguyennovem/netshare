@@ -249,15 +249,24 @@ class _ServerWidgetState extends State<ServerWidget> {
     final address = '$ipAddress:$port';
 
     // Router instance to handler requests.
+    // Use shelf_router.Router(notFoundHandler: _staticHandler(_pickedDir.value.path))
+    // as a fallback for static handler (may use this later)
     final routerHandler = shelf_router.Router()
       ..get('/files', (request) => _getFilesHandler(request, address))
       ..post('/upload', (request) => _uploadFileHandler(request, address));
 
-    final cascade = Cascade().add(routerHandler);
+    // static handler always in the first order in list handlers
+    Cascade cascade;
     if (_pickedDir.value.existsSync()) {
-      cascade.add(_staticHandler(_pickedDir.value.path));
+      cascade = Cascade()
+          .add(_staticHandler(_pickedDir.value.path))
+          .add(routerHandler)
+          .add(_undefinedHandler);
+    } else {
+      cascade = Cascade()
+          .add(routerHandler)
+          .add(_undefinedHandler);
     }
-    cascade.add(_undefinedHandler);
     var handler = const Pipeline()
         .addMiddleware(logRequests(logger: (message, isError) => _exposeLogger(message: message)))
         .addHandler(cascade.handler);
@@ -297,7 +306,7 @@ class _ServerWidgetState extends State<ServerWidget> {
 
     final listJson = files.map((f) {
       final fileName = path.basename(f.path);
-      return SharedFile(name: fileName, url: 'http://$address/files/$fileName').toJson();
+      return SharedFile(name: fileName, url: 'http://$address/$fileName').toJson();
     }).toList();
     return Response(
       HttpStatus.ok,
@@ -337,7 +346,7 @@ class _ServerWidgetState extends State<ServerWidget> {
 
       // response added files
       final listJson = listFileName.map((fileName) {
-        return SharedFile(name: fileName, url: 'http://$address/files/$fileName').toJson();
+        return SharedFile(name: fileName, url: 'http://$address/$fileName').toJson();
       }).toList();
       return Response(
         HttpStatus.ok,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
+import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/common_view/empty_widget.dart';
 import 'package:netshare/ui/list_file/file_tile.dart';
@@ -31,7 +32,10 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
                     ? ListView.separated(
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
-                          return FileTile(sharedFile: files.elementAt(index));
+                          return FileTile(
+                            sharedFile: files.elementAt(index),
+                            sourceScreen: SourceScreen.client,
+                          );
                         },
                         separatorBuilder: (context, index) {
                           return const Divider(

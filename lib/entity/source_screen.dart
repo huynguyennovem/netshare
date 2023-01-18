@@ -1,0 +1,4 @@
+enum SourceScreen {
+  client,
+  send
+}

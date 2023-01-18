@@ -6,6 +6,7 @@ import 'package:netshare/config/styles.dart';
 import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
+import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/list_file/file_tile.dart';
 import 'package:netshare/util/extension.dart';
@@ -104,8 +105,11 @@ class _SendWidgetState extends State<SendWidget> {
   _buildListPickedFiles() => ListView.separated(
     itemBuilder: (context, index) {
       final file = _pickedFile[index];
-      return FileTile(sharedFile: SharedFile(name: basename(file.path), url: file.path));
-    },
+      return FileTile(
+            sharedFile: SharedFile(name: basename(file.path), url: file.path),
+            sourceScreen: SourceScreen.send,
+          );
+        },
     separatorBuilder: (context, index) {
       return const Divider(color: Colors.black12, height: 1.0);
     },

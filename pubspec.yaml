@@ -51,6 +51,7 @@ dependencies:
   shelf_static: ^1.0.0
   mime: ^1.0.3
   http_parser: ^4.0.2
+  share_plus: ^6.3.0
 
 dev_dependencies:
   flutter_test:
