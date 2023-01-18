@@ -16,3 +16,37 @@ const mManualConnectPath = 'manual_connect';
 // HTTP server path
 const mFiles = '/files';
 const mUpload = '/upload';
+
+// Supported file extension
+const mTxt = 'txt';
+const mPdf = 'pdf';
+
+const mMp4 = 'mp4';
+const mAvi = 'avi';
+const mMov = 'mov';
+
+const mMp3 = 'mp3';
+const mWav = 'wav';
+
+const mPng = 'png';
+const mSvg = 'svg';
+const mJpg = 'jpg';
+const mJpeg = 'jpeg';
+const mBmp = 'bmp';
+const mGif = 'gif';
+const mWebp = 'webp';
+
+const mDoc = 'doc';
+const mDocX = 'docx';
+const mPpt = 'ppt';
+const mPptX = 'pptx';
+const mXls = 'xls';
+const mXlsx = 'xlsx';
+
+const mZip = 'zip';
+const mRar = 'rar';
+
+const mExe = 'exe';
+const mApk = 'apk';
+const mAab = 'aab';
+const mDmg = 'dmg';

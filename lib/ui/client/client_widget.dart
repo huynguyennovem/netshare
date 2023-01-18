@@ -88,42 +88,41 @@ class _ClientWidgetState extends State<ClientWidget> {
                   ),
           ],
         ),
-        body: Container(
-          margin: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              NavigationWidgets(connectionStatus: connectionStatus),
-              const SizedBox(height: 20),
-              const Expanded(child: ListSharedFiles()),
-              _buildConnectOptions(),
-            ],
-          ),
+        body: Column(
+          children: [
+            NavigationWidgets(connectionStatus: connectionStatus),
+            const Expanded(child: ListSharedFiles()),
+            _buildConnectOptions(),
+          ],
         ),
       );
     });
   }
 
-  _buildConnectOptions() => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // FloatingActionButton.extended(
-          //   heroTag: const Text("Scan"),
-          //   onPressed: () => _onClickScanButton(),
-          //   label: const Text('Scan to connect'),
-          //   icon: const Icon(Icons.qr_code_scanner),
-          // ),
-          // const SizedBox(width: 20.0),
-          FloatingActionButton.extended(
-            heroTag: const Text("Manual"),
-            onPressed: () => _onClickManualButton(),
-            label: Text(
-              'Manual connect',
-              style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.black),
+  _buildConnectOptions() => Container(
+    margin: const EdgeInsets.only(bottom: 12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // FloatingActionButton.extended(
+            //   heroTag: const Text("Scan"),
+            //   onPressed: () => _onClickScanButton(),
+            //   label: const Text('Scan to connect'),
+            //   icon: const Icon(Icons.qr_code_scanner),
+            // ),
+            // const SizedBox(width: 20.0),
+            FloatingActionButton.extended(
+              heroTag: const Text("Manual"),
+              onPressed: () => _onClickManualButton(),
+              label: Text(
+                'Manual connect',
+                style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.black),
+              ),
+              icon: const Icon(Icons.account_tree),
             ),
-            icon: const Icon(Icons.account_tree),
-          ),
-        ],
-      );
+          ],
+        ),
+  );
 
   // void _onClickScanButton() {
   //   context.go(Utilities.getRoutePath(name: mScanningWidget));

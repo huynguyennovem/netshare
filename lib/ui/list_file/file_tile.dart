@@ -22,10 +22,10 @@ class _FileTileState extends State<FileTile> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
         child: Row(
           children: [
-            const Icon(Icons.file_copy),
+            Icon(widget.sharedFile.fileIcon, color: Theme.of(context).colorScheme.secondary),
             const SizedBox(width: 8.0),
             Expanded(
               child: Column(
