@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
+import 'package:netshare/entity/source_screen.dart';
+import 'package:netshare/ui/list_file/file_menu_options.dart';
 import 'package:netshare/util/extension.dart';
 
 class FileTile extends StatefulWidget {
   final SharedFile sharedFile;
+  final SourceScreen sourceScreen;
 
-  const FileTile({Key? key, required this.sharedFile}) : super(key: key);
+  const FileTile({
+    Key? key,
+    required this.sharedFile,
+    required this.sourceScreen,
+  }) : super(key: key);
 
   @override
   State<FileTile> createState() => _FileTileState();
@@ -17,10 +24,12 @@ class _FileTileState extends State<FileTile> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
+        if(SourceScreen.client != widget.sourceScreen)  return;
         await Clipboard.setData(ClipboardData(text: widget.sharedFile.url)).then((value) {
           context.showSnackbar('Copied to clipboard');
         });
       },
+      onLongPress: () => _showMenuOptions(),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
         child: Row(
@@ -49,6 +58,24 @@ class _FileTileState extends State<FileTile> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showMenuOptions() {
+    if(SourceScreen.client != widget.sourceScreen)  return;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (bsContext) {
+        return FileMenuOptions(
+          onComplete: () async {
+            Navigator.pop(context);
+          },
+          sharedFile: widget.sharedFile,
+        );
+      },
     );
   }
 }

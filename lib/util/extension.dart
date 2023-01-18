@@ -14,7 +14,7 @@ extension ContextExt on BuildContext {
 
 }
 
-extension FileIconExt on SharedFile {
+extension SharedFileExt on SharedFile {
   IconData get fileIcon {
     if(null == name) {
       return Icons.question_mark;
