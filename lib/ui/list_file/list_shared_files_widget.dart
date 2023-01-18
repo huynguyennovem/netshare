@@ -22,7 +22,7 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
         final files = value.files;
         debugPrint('Fetched files: ${files.length}');
         return Container(
-          padding: const EdgeInsets.all(8.0),
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: Column(
             children: [
               _buildHeader(),
@@ -34,7 +34,12 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
                           return FileTile(sharedFile: files.elementAt(index));
                         },
                         separatorBuilder: (context, index) {
-                          return const Divider(color: Colors.black12, height: 1.0);
+                          return const Divider(
+                            color: Colors.black12,
+                            height: 0.5,
+                            indent: 8.0,
+                            endIndent: 8.0,
+                          );
                         },
                         itemCount: files.length,
                       )
