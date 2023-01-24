@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:go_router/go_router.dart';
 import 'package:netshare/di/di.dart';
+import 'package:netshare/plugin_management/plugins.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/provider/db_provider.dart';
 import 'package:netshare/provider/file_provider.dart';
@@ -15,8 +17,9 @@ import 'package:provider/provider.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/ui/send/uploading_widget.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initPlugins();
   setupDI();
   runApp(MyApp());
 }

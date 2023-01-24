@@ -1,4 +1,8 @@
+import 'dart:isolate';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/entity/connection_status.dart';
 import 'package:netshare/provider/connection_provider.dart';
@@ -19,6 +23,9 @@ class ClientWidget extends StatefulWidget {
 }
 
 class _ClientWidgetState extends State<ClientWidget> {
+
+  final ReceivePort _port = ReceivePort();
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +36,45 @@ class _ClientWidgetState extends State<ClientWidget> {
         context.read<FileProvider>().addAllSharedFiles(sharedFiles: files);
       }
     });
+
+    if (UtilityFunctions.isMobile) {
+      try {
+        IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+        _port.listen((dynamic data) {
+          String taskId = data[0];
+          DownloadTaskStatus status = data[1];
+          if (status == DownloadTaskStatus.complete) {
+
+          } else if (status == DownloadTaskStatus.failed) {
+
+          }
+        });
+        FlutterDownloader.registerCallback(downloadCallback, step: 1);
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+    }
+  }
+
+  @pragma('vm:entry-point')
+  static void downloadCallback(
+    String id,
+    DownloadTaskStatus status,
+    int progress,
+  ) {
+    debugPrint(
+      'Callback on background isolate: '
+      'task ($id) is in status ($status) and process ($progress)',
+    );
+    IsolateNameServer.lookupPortByName('downloader_send_port')?.send([id, status, progress]);
+  }
+
+  @override
+  void dispose() {
+    if (UtilityFunctions.isMobile) {
+      IsolateNameServer.removePortNameMapping('downloader_send_port');
+    }
+    super.dispose();
   }
 
   @override
