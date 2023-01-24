@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:netshare/config/constants.dart';
+import 'package:netshare/entity/internal_error.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:path/path.dart' as p;
 
 extension ContextExt on BuildContext {
 
-  void showSnackbar(String message) {
+  void showSnackbar(String message, {Duration? duration}) {
     ScaffoldMessenger.of(this).showSnackBar(SnackBar(
-      duration: const Duration(seconds: 1),
+      duration: duration ?? const Duration(seconds: 1),
       content: Text(message),
     ));
   }
 
+  void handleInternalError({
+    required InternalError internalError,
+    bool shouldShowSnackbar = false,
+  }) {
+    debugPrint(internalError.message);
+    if (shouldShowSnackbar) {
+      showSnackbar(internalError.message);
+    }
+  }
 }
 
 extension SharedFileExt on SharedFile {
