@@ -4,7 +4,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:netshare/config/styles.dart';
+import 'package:netshare/data/download_service.dart';
 import 'package:netshare/entity/connection_status.dart';
+import 'package:netshare/entity/download/download_entity.dart';
+import 'package:netshare/entity/download/download_manner.dart';
+import 'package:netshare/entity/download/download_state.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/ui/client/connect_widget.dart';
 import 'package:netshare/ui/client/navigation_widget.dart';
@@ -14,6 +18,7 @@ import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/list_file/list_shared_files_widget.dart';
+import 'package:netshare/util/extension.dart';
 
 class ClientWidget extends StatefulWidget {
   const ClientWidget({super.key});
@@ -36,24 +41,60 @@ class _ClientWidgetState extends State<ClientWidget> {
         context.read<FileProvider>().addAllSharedFiles(sharedFiles: files);
       }
     });
+    _initDownloadModule();
+    _downloadStreamListener();
+  }
 
+  void _initDownloadModule() {
     if (UtilityFunctions.isMobile) {
       try {
         IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
-        _port.listen((dynamic data) {
-          String taskId = data[0];
-          DownloadTaskStatus status = data[1];
-          if (status == DownloadTaskStatus.complete) {
+        _port.listen((dynamic data) async {
 
-          } else if (status == DownloadTaskStatus.failed) {
+          // TODO: 2. Flutter engine issue: can only send basic dart type
+          // convert int to a custom state
+          DownloadState state = (data[1] as int).toDownloadState;
 
+          // only update state when finished, less update, less memory usage
+          if(DownloadState.downloading != state) {
+            String taskId = data[0];
+            final tasks = await FlutterDownloader.loadTasksWithRawQuery(
+              query: "SELECT * FROM task WHERE task_id = \"$taskId\"",
+            );
+
+            String? fileName;
+            if (null != tasks) {
+              final task = tasks.firstWhere((element) => taskId == element.taskId);
+              fileName = task.filename;
+            }
+
+            getIt.get<DownloadService>().updateDownloadState(
+                DownloadEntity(
+                  taskId,
+                  fileName ?? '',
+                  DownloadManner.flutterDownloader,
+                  state,
+                )
+            );
           }
         });
-        FlutterDownloader.registerCallback(downloadCallback, step: 1);
+        FlutterDownloader.registerCallback(downloadCallback);
       } catch (e) {
         debugPrint(e.toString());
       }
     }
+  }
+
+  void _downloadStreamListener() {
+    getIt.get<DownloadService>().downloadStream.listen((downloadEntity) {
+      debugPrint("[DownloadService] Download stream log: $downloadEntity");
+      if (mounted) {
+        context.read<FileProvider>().updateFileState(
+          fileName: downloadEntity.fileName,
+          newFileState: downloadEntity.state.toSharedFileState,
+        );
+      }
+    });
   }
 
   @pragma('vm:entry-point')
@@ -66,7 +107,10 @@ class _ClientWidgetState extends State<ClientWidget> {
       'Callback on background isolate: '
       'task ($id) is in status ($status) and process ($progress)',
     );
-    IsolateNameServer.lookupPortByName('downloader_send_port')?.send([id, status, progress]);
+    // TODO: 1. Flutter engine issue: can only send basic dart type + restart/hot reload does not work
+    //  (https://github.com/flutter/flutter/issues/119589)
+    //  can only send basic dart type -> Fix: convert status entity to int
+    IsolateNameServer.lookupPortByName('downloader_send_port')?.send([id, status.value, progress]);
   }
 
   @override

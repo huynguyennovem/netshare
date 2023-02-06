@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
+import 'package:netshare/entity/shared_file_state.dart';
 
 class FileProvider extends ChangeNotifier {
-  Set<SharedFile> _files = {};
-  Set<SharedFile> get files => _files;
+  final List<SharedFile> _files = [];
+  List<SharedFile> get files => _files;
 
   void addSharedFile({required SharedFile sharedFile}) {
     _files.add(sharedFile);
@@ -20,6 +21,15 @@ class FileProvider extends ChangeNotifier {
 
   void clearAllFiles() {
     _files.clear();
+    notifyListeners();
+  }
+
+  void updateFileState({required String fileName, required SharedFileState newFileState}) {
+    final oldFile = _files.firstWhere((file) => fileName == file.name);
+    final oldIndex = _files.indexOf(oldFile);
+    final updatedFile = oldFile.copyWith(state: newFileState);
+    _files[oldIndex] = updatedFile;
+
     notifyListeners();
   }
 }

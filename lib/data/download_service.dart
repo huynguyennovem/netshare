@@ -1,16 +1,39 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:android_path_provider/android_path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:netshare/entity/download/download_entity.dart';
+import 'package:netshare/entity/download/download_manner.dart';
+import 'package:netshare/entity/download/download_state.dart';
 import 'package:netshare/entity/internal_error.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class DownloadService {
-  static void startDownloading(String fileUrl, {Function(InternalError)? onError}) async {
+
+  StreamController downloadStreamController = StreamController<DownloadEntity>.broadcast();
+
+  Stream<DownloadEntity> get downloadStream =>
+      downloadStreamController.stream as Stream<DownloadEntity>;
+
+  void disposeStream() {
+    downloadStreamController.close();
+  }
+
+  void addToDownloadStream(DownloadEntity downloadEntity) {
+    downloadStreamController.sink.add(downloadEntity);
+  }
+
+  void updateDownloadState(DownloadEntity downloadEntity) {
+    downloadStreamController.sink.add(downloadEntity);
+  }
+
+  void startDownloading(String fileUrl, {Function(InternalError)? onError}) async {
     if (UtilityFunctions.isMobile) {
       downloadWithFlutterDownloader(fileUrl: fileUrl, onError: onError);
     } else {
@@ -20,7 +43,7 @@ class DownloadService {
 
   // Download file using flutter_downloader plugin.
   // By default, files will be saved on Download directory on Android and Files on iOS
-  static Future<String?> downloadWithFlutterDownloader({
+  Future<void> downloadWithFlutterDownloader({
     required String fileUrl,
     Function(InternalError)? onError,
   }) async {
@@ -47,12 +70,21 @@ class DownloadService {
         saveInPublicStorage: true,
       );
       debugPrint('Download taskId: $taskId');
-      return taskId;
+
+      // add to stream
+      final fileName = path.basename(fileUrl);
+      addToDownloadStream(
+        DownloadEntity(
+          taskId ?? fileName,
+          fileName,
+          DownloadManner.flutterDownloader,
+          DownloadState.downloading,
+        )
+      );
     }
-    return null;
   }
 
-  static void downloadWithHttp({
+  void downloadWithHttp({
     required String fileUrl,
     Function(InternalError)? onError,
   }) async {
@@ -71,6 +103,7 @@ class DownloadService {
 
     List<List<int>> chunks = [];
     int downloaded = 0;
+    final taskId = const Uuid().v1();
     response.asStream().listen((http.StreamedResponse res) async {
       final contentLen = res.contentLength;
       res.stream
@@ -81,6 +114,14 @@ class DownloadService {
             }
             chunks.add(chunk);
             downloaded += chunk.length;
+            addToDownloadStream(
+                DownloadEntity(
+                  taskId,
+                  fileName,
+                  DownloadManner.http,
+                  DownloadState.downloading,
+                )
+            );
             return chunk;
           })
           .pipe(out)
@@ -94,7 +135,24 @@ class DownloadService {
             await out.close();
             downloaded = 0;
             chunks.clear();
-          });
+            updateDownloadState(
+                DownloadEntity(
+                  taskId,
+                  fileName,
+                  DownloadManner.http,
+                  DownloadState.succeed,
+                )
+            );
+      }).onError((error, stackTrace) => (error, stackTrace) {
+        updateDownloadState(
+            DownloadEntity(
+              taskId,
+              fileName,
+              DownloadManner.http,
+              DownloadState.failed,
+            )
+        );
+      });
     });
   }
 }
