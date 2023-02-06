@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
+import 'package:netshare/entity/shared_file_state.dart';
 import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/ui/list_file/file_menu_options.dart';
 import 'package:netshare/util/extension.dart';
@@ -54,7 +55,8 @@ class _FileTileState extends State<FileTile> {
                   ),
                 ],
               ),
-            )
+            ),
+            _buildFileState(),
           ],
         ),
       ),
@@ -77,5 +79,22 @@ class _FileTileState extends State<FileTile> {
         );
       },
     );
+  }
+
+  _buildFileState() {
+    final state = widget.sharedFile.state;
+    switch(state) {
+      case SharedFileState.available:
+        return const Icon(Icons.check_circle, color: Colors.green, size: 16.0);
+      case SharedFileState.downloading:
+      case SharedFileState.uploading:
+        return const SizedBox(
+            width: 12.0,
+            height: 12.0,
+            child: CircularProgressIndicator(strokeWidth: 2.0),
+          );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

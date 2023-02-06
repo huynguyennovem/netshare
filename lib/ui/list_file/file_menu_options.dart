@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:netshare/config/styles.dart';
+import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/ui/common_view/confirm_dialog.dart';
 import 'package:netshare/data/download_service.dart';
@@ -87,7 +88,7 @@ class _FileMenuOptionsState extends State<FileMenuOptions> {
           onPermanentlyDenied: () => showOpenSettingsDialog(context),
         );
         if (isPermissionGranted) {
-          DownloadService.startDownloading(url, onError: (error) {
+          getIt.get<DownloadService>().startDownloading(url, onError: (error) {
             context.handleInternalError(
               internalError: error,
               shouldShowSnackbar: true,
@@ -105,7 +106,7 @@ class _FileMenuOptionsState extends State<FileMenuOptions> {
           }
         }
       } else {
-        DownloadService.startDownloading(url, onError: (error) {
+        getIt.get<DownloadService>().startDownloading(url, onError: (error) {
           context.handleInternalError(
             internalError: error,
             shouldShowSnackbar: true,

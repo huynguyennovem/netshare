@@ -52,11 +52,12 @@ dependencies:
   mime: ^1.0.3
   http_parser: ^4.0.2
   share_plus: ^6.3.0
-  flutter_downloader: ^1.10.1
+  flutter_downloader: ^1.10.1+2
   path_provider: ^2.0.11
   android_path_provider: ^0.3.0
   permission_handler: ^10.2.0
   device_info_plus: ^8.0.0
+  uuid: ^3.0.7
 
 dev_dependencies:
   flutter_test:

@@ -7,7 +7,7 @@ import Foundation
 
 import device_info_plus
 import network_info_plus
-import path_provider_macos
+import path_provider_foundation
 import share_plus
 import shared_preferences_foundation
 

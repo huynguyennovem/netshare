@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:netshare/config/constants.dart';
+import 'package:netshare/entity/download/download_state.dart';
 import 'package:netshare/entity/internal_error.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
+import 'package:netshare/entity/shared_file_state.dart';
 import 'package:path/path.dart' as p;
 
 extension ContextExt on BuildContext {
@@ -70,5 +72,28 @@ extension SharedFileExt on SharedFile {
         return Icons.phone_iphone;
     }
     return Icons.question_mark;
+  }
+}
+
+extension IntExt on int {
+  DownloadState get toDownloadState {
+    switch(this) {
+      case 2: return DownloadState.downloading;
+      case 3: return DownloadState.succeed;
+      case 4: return DownloadState.failed;
+      default:
+      return DownloadState.none;
+    }
+  }
+}
+
+extension DownloadStateExt on DownloadState {
+  SharedFileState get toSharedFileState {
+    switch(this) {
+      case DownloadState.downloading: return SharedFileState.downloading;
+      case DownloadState.succeed: return SharedFileState.available;
+      default:
+        return SharedFileState.none;
+    }
   }
 }
