@@ -25,10 +25,6 @@ class DownloadService {
     downloadStreamController.close();
   }
 
-  void addToDownloadStream(DownloadEntity downloadEntity) {
-    downloadStreamController.sink.add(downloadEntity);
-  }
-
   void updateDownloadState(DownloadEntity downloadEntity) {
     downloadStreamController.sink.add(downloadEntity);
   }
@@ -73,10 +69,12 @@ class DownloadService {
 
       // add to stream
       final fileName = path.basename(fileUrl);
-      addToDownloadStream(
+      updateDownloadState(
         DownloadEntity(
           taskId ?? fileName,
           fileName,
+          fileUrl,
+          savedDir.path,
           DownloadManner.flutterDownloader,
           DownloadState.downloading,
         )
@@ -104,6 +102,19 @@ class DownloadService {
     List<List<int>> chunks = [];
     int downloaded = 0;
     final taskId = const Uuid().v1();
+
+    // Update download state only one time, see (1)
+    updateDownloadState(
+        DownloadEntity(
+          taskId,
+          fileName,
+          fileUrl,
+          destPath.path,
+          DownloadManner.http,
+          DownloadState.downloading,
+        )
+    );
+
     response.asStream().listen((http.StreamedResponse res) async {
       final contentLen = res.contentLength;
       res.stream
@@ -114,14 +125,12 @@ class DownloadService {
             }
             chunks.add(chunk);
             downloaded += chunk.length;
-            addToDownloadStream(
-                DownloadEntity(
-                  taskId,
-                  fileName,
-                  DownloadManner.http,
-                  DownloadState.downloading,
-                )
-            );
+
+            // temporary comment out this until use it for download progressing usage (1)
+            // (displaying download percentage for eg)
+            // updateDownloadState(DownloadEntity(
+            //     taskId, fileName, fileUrl, DownloadManner.http, DownloadState.downloading));
+
             return chunk;
           })
           .pipe(out)
@@ -139,6 +148,8 @@ class DownloadService {
                 DownloadEntity(
                   taskId,
                   fileName,
+                  fileUrl,
+                  destPath.path,
                   DownloadManner.http,
                   DownloadState.succeed,
                 )
@@ -148,6 +159,8 @@ class DownloadService {
             DownloadEntity(
               taskId,
               fileName,
+              fileUrl,
+              destPath.path,
               DownloadManner.http,
               DownloadState.failed,
             )

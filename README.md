@@ -20,6 +20,22 @@ Server | Client
 
 https://user-images.githubusercontent.com/29337364/211870449-dd80c199-e64a-4c21-af46-a1aceea9b61c.mp4
 
+## How to build the project
+_Note: This project is mainly running on the latest Flutter beta channel_
+
+1. Run Hive object generator (if needed)
+The project's using (hive)[https://pub.dev/packages/hive] (NoSQL Database) to cache object data. Before running this, we should generate all entities adapters (being inside `.g.dart` files) to make sure all they are updated:
+
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+2. Run the project as usual
+
+```bash
+flutter run
+```
+
 
 
 

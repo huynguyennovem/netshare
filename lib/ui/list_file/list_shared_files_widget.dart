@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/provider/file_provider.dart';
+import 'package:netshare/repository/file_repository.dart';
 import 'package:netshare/ui/common_view/empty_widget.dart';
 import 'package:netshare/ui/list_file/file_tile.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +15,8 @@ class ListSharedFiles extends StatefulWidget {
 }
 
 class _ListSharedFilesState extends State<ListSharedFiles> {
+
+  final fileRepository = getIt.get<FileRepository>();
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +45,7 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
                             height: 0.5,
                             indent: 8.0,
                             endIndent: 8.0,
+                            thickness: 0.6,
                           );
                         },
                         itemCount: files.length,
@@ -72,7 +75,7 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
           child: const Icon(Icons.sync, color: Colors.white),
         ),
         onPressed: () async {
-          final files = (await getIt.get<ApiService>().getSharedFiles()).getOrElse(() => {});
+          final files = (await fileRepository.getSharedFilesWithState()).getOrElse(() => {});
           if (mounted) {
             context.read<FileProvider>().addAllSharedFiles(sharedFiles: files);
           }

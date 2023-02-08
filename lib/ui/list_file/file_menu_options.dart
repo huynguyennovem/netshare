@@ -3,7 +3,7 @@ import 'package:netshare/config/styles.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/ui/common_view/confirm_dialog.dart';
-import 'package:netshare/data/download_service.dart';
+import 'package:netshare/service/download_service.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:permission_handler/permission_handler.dart';
