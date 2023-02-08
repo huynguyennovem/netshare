@@ -41,18 +41,21 @@ class _FileTileState extends State<FileTile> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.sharedFile.name ?? 'unknown',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      widget.sharedFile.name ?? 'unknown',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  const SizedBox(height: 4.0),
-                  Text(
-                    widget.sharedFile.url ?? 'unknown',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.black26),
-                  ),
+                  // const SizedBox(height: 4.0),
+                  // Text(
+                  //   widget.sharedFile.url ?? 'unknown',
+                  //   maxLines: 1,
+                  //   overflow: TextOverflow.ellipsis,
+                  //   style: const TextStyle(color: Colors.black26),
+                  // ),
                 ],
               ),
             ),
