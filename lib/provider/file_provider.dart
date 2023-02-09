@@ -24,10 +24,14 @@ class FileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateFileState({required String fileName, required SharedFileState newFileState}) {
+  void updateFile({
+    required String fileName,
+    required SharedFileState newFileState,
+    required String savedDir,
+  }) {
     final oldFile = _files.firstWhere((file) => fileName == file.name);
     final oldIndex = _files.indexOf(oldFile);
-    final updatedFile = oldFile.copyWith(state: newFileState);
+    final updatedFile = oldFile.copyWith(state: newFileState, savedDir: savedDir);
     _files[oldIndex] = updatedFile;
 
     notifyListeners();
