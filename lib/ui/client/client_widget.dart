@@ -98,9 +98,10 @@ class _ClientWidgetState extends State<ClientWidget> {
 
       // update state to the list files
       if (mounted) {
-        context.read<FileProvider>().updateFileState(
+        context.read<FileProvider>().updateFile(
           fileName: downloadEntity.fileName,
           newFileState: downloadEntity.state.toSharedFileState,
+          savedDir: downloadEntity.savedDir,
         );
       }
 
