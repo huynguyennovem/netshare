@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/entity/shared_file_state.dart';
 import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/ui/list_file/file_menu_options.dart';
 import 'package:netshare/util/extension.dart';
+import 'package:open_filex/open_filex.dart';
 
 class FileTile extends StatefulWidget {
   final SharedFile sharedFile;
@@ -26,9 +28,12 @@ class _FileTileState extends State<FileTile> {
     return InkWell(
       onTap: () async {
         if(SourceScreen.client != widget.sourceScreen)  return;
-        await Clipboard.setData(ClipboardData(text: widget.sharedFile.url)).then((value) {
-          context.showSnackbar('Copied to clipboard');
-        });
+        final file = File('${widget.sharedFile.savedDir}/${widget.sharedFile.name}');
+        if(file.existsSync()) {
+          OpenFilex.open(file.path);
+        } else {
+          context.showSnackbar('File does not exist. Please download it first!');
+        }
       },
       onLongPress: () => _showMenuOptions(),
       child: Container(
