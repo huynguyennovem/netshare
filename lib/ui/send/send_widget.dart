@@ -59,8 +59,8 @@ class _SendWidgetState extends State<SendWidget> {
             ),
             const SizedBox(height: 32.0),
             Flexible(
-              child: _pickedFile.isEmpty ? Column(
-                children: const [
+              child: _pickedFile.isEmpty ? const Column(
+                children: [
                   Text('No file picked'),
                   Spacer(),
                 ],

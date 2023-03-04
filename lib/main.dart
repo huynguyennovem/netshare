@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:go_router/go_router.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/plugin_management/plugins.dart';

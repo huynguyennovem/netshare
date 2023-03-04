@@ -23,7 +23,7 @@ class AddressFieldWidget extends StatelessWidget {
           child: TextField(
             enabled: isEnableIP ?? true,
             controller: ipTextController,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(
               hintText: '192.168.1.100',
               border: OutlineInputBorder(
