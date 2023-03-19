@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -17,6 +18,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
 import 'package:shelf_static/shelf_static.dart' as shelf_static;
+import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 class ServerWidget extends StatefulWidget {
   const ServerWidget({Key? key}) : super(key: key);
@@ -37,6 +39,9 @@ class _ServerWidgetState extends State<ServerWidget> {
   final _loggerController = TextEditingController();
   final ScrollController _loggerScrollBarController = ScrollController();
   final ValueNotifier<StringBuffer> _logBuffer = ValueNotifier(StringBuffer());
+
+  late StopWatchTimer _stopWatchTimer;
+  final ValueNotifier<String> _watchTimerValue = ValueNotifier('');
 
   @override
   void initState() {
@@ -67,10 +72,22 @@ class _ServerWidgetState extends State<ServerWidget> {
         curve: Curves.easeIn,
       );
     });
+    _stopWatchTimer = StopWatchTimer(mode: StopWatchMode.countUp);
+    _stopWatchTimer.secondTime.listen((secs) {
+      _watchTimerValue.value = Duration(seconds: secs).formatTime();
+    });
+    _isHostingNotifier.addListener(() {
+      if(_isHostingNotifier.value) {
+        _stopWatchTimer.onStartTimer();
+      } else {
+        _stopWatchTimer.onStopTimer();
+        _stopWatchTimer.onResetTimer();
+      }
+    });
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     _stopHosting(isForce: true);
 
     _ipTextController.dispose();
@@ -84,13 +101,41 @@ class _ServerWidgetState extends State<ServerWidget> {
 
     _isHostingNotifier.dispose();
     _serverNotifier.dispose();
+
+    await _stopWatchTimer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Align(
+          alignment: Alignment.centerRight,
+          child: ValueListenableBuilder(
+            valueListenable: _isHostingNotifier,
+            builder: (BuildContext context, bool value, Widget? child) {
+              return value ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.circle, size: 12.0, color: Colors.red),
+                  const SizedBox(width: 8.0),
+                  ValueListenableBuilder(
+                    valueListenable: _watchTimerValue,
+                    builder: (BuildContext context, String value, Widget? child) {
+                      return Text(
+                        value.isEmpty ? '00:00:00' : value,
+                        style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                      );
+                    },
+                  ),
+                ],
+              ) : const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
       body: Container(
         alignment: Alignment.center,
         margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
@@ -270,6 +315,7 @@ class _ServerWidgetState extends State<ServerWidget> {
     var handler = const Pipeline()
         .addMiddleware(logRequests(logger: (message, isError) => _exposeLogger(message: message)))
         .addHandler(cascade.handler);
+
     _isHostingNotifier.value = !_isHostingNotifier.value;
 
     try {

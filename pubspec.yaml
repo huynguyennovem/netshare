@@ -61,6 +61,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   open_filex: ^4.3.2
+  stop_watch_timer: ^2.0.0
 
 dev_dependencies:
   flutter_test:
