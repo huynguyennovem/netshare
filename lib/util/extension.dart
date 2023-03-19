@@ -97,3 +97,7 @@ extension DownloadStateExt on DownloadState {
     }
   }
 }
+
+extension TimeFormat on Duration {
+  String formatTime() => '$this'.split('.')[0].padLeft(8, '0');
+}
