@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/entity/screen_navigation_mode.dart';
-import 'package:netshare/ui/common_view/two_side_title_switch.dart';
+import 'package:netshare/ui/common_view/two_modes_switcher.dart';
 
 class NavigationWidget extends StatefulWidget {
   const NavigationWidget({Key? key}) : super(key: key);
@@ -30,7 +30,7 @@ class _NavigationWidgetState extends State<NavigationWidget> {
                 const Text('Select mode:'),
                 const SizedBox(width: 36.0),
                 Flexible(
-                  child: TwoSideTitleSwitch(
+                  child: TwoModeSwitcher(
                     leftValue: const Text('CLIENT'),
                     rightValue: const Text('SERVER'),
                     switchInitValue: true,
