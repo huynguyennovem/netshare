@@ -7,6 +7,8 @@ class ConfirmDialog extends StatelessWidget {
   final Function onConfirm;
   final String? cancelButtonTitle;
   final String? okButtonTitle;
+  final double? dialogWidth;
+  final double? dialogHeight;
 
   const ConfirmDialog({
     Key? key,
@@ -16,6 +18,8 @@ class ConfirmDialog extends StatelessWidget {
     required this.onConfirm,
     this.cancelButtonTitle,
     this.okButtonTitle,
+    this.dialogWidth,
+    this.dialogHeight,
   }) : super(key: key);
 
   @override
@@ -26,6 +30,8 @@ class ConfirmDialog extends StatelessWidget {
       ),
       elevation: 4.0,
       child: Container(
+        width: dialogWidth,
+        height: dialogHeight,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -36,7 +42,10 @@ class ConfirmDialog extends StatelessWidget {
               children: [
                 Expanded(child: header),
                 IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    onCancel?.call();
+                    Navigator.of(context).pop();
+                  },
                   icon: const Icon(Icons.close, color: Colors.black),
                 ),
               ],

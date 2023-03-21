@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/entity/download/download_state.dart';
+import 'package:netshare/entity/function_mode.dart';
 import 'package:netshare/entity/internal_error.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/entity/shared_file_state.dart';
+import 'package:netshare/ui/common_view/confirm_dialog.dart';
 import 'package:path/path.dart' as p;
 
 extension ContextExt on BuildContext {
@@ -23,6 +25,37 @@ extension ContextExt on BuildContext {
     if (shouldShowSnackbar) {
       showSnackbar(internalError.message);
     }
+  }
+
+  void switchingModes({
+    required FunctionMode newMode,
+    Function(bool)? confirmCallback,
+  }) {
+    showDialog(
+      barrierDismissible: false,
+      context: this,
+      builder: (BuildContext ct) {
+        return ConfirmDialog(
+          dialogWidth: MediaQuery.of(this).size.width / 2,
+          header: Text(
+            'Switching to ${newMode.name}',
+            style: Theme.of(ct).textTheme.headlineMedium?.copyWith(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          body: const Text(
+            'Are you sure you want to switch to this mode?',
+            textAlign: TextAlign.center,
+          ),
+          cancelButtonTitle: 'No',
+          okButtonTitle: 'Yes, I\'m sure',
+          onCancel: () => confirmCallback?.call(false),
+          onConfirm: () => confirmCallback?.call(true),
+        );
+      },
+    );
   }
 }
 

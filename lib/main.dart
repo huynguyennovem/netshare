@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
             if(UtilityFunctions.isMobile) {
               return '/$mClientPath';
             } else {
-              return '/$mNavigationPath';
+              return '/$mServerPath';
             }
           },
       ),
@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        title: 'Sharing file in local',
+        title: 'NetShare',
         theme: ThemeData(
           useMaterial3: true,
           appBarTheme: const AppBarTheme(color: Colors.blueAccent),

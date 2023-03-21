@@ -4,12 +4,16 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/data/pref_data.dart';
 import 'package:netshare/di/di.dart';
+import 'package:netshare/entity/function_mode.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/ui/common_view/address_field_widget.dart';
+import 'package:netshare/ui/common_view/two_modes_switcher.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:mime/mime.dart';
@@ -38,14 +42,19 @@ class _ServerWidgetState extends State<ServerWidget> {
   final ValueNotifier<HttpServer?> _serverNotifier = ValueNotifier(null);
   final _loggerController = TextEditingController();
   final ScrollController _loggerScrollBarController = ScrollController();
-  final ValueNotifier<StringBuffer> _logBuffer = ValueNotifier(StringBuffer());
+  final LogNotifier _logBuffer = LogNotifier(StringBuffer());
 
   late StopWatchTimer _stopWatchTimer;
   final ValueNotifier<String> _watchTimerValue = ValueNotifier('');
 
+  late TwoModeSwitcher _twoModeSwitcher;
+  final GlobalKey<TwoModeSwitcherState> _twoModeSwitcherKey = GlobalKey<TwoModeSwitcherState>();
+
   @override
   void initState() {
     super.initState();
+
+    // pre-loading values
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final lastAddress = await getIt.get<PrefData>().getLastHostedAddress();
       if (lastAddress != null && lastAddress.isNotEmpty) {
@@ -65,6 +74,8 @@ class _ServerWidgetState extends State<ServerWidget> {
         _pickedDir.value = Directory(lastSavedDir);
       }
     });
+
+    // logger
     _loggerController.addListener(() {
       _loggerScrollBarController.animateTo(
         _loggerScrollBarController.position.maxScrollExtent,
@@ -72,37 +83,41 @@ class _ServerWidgetState extends State<ServerWidget> {
         curve: Curves.easeIn,
       );
     });
+
+    // server uptime
     _stopWatchTimer = StopWatchTimer(mode: StopWatchMode.countUp);
     _stopWatchTimer.secondTime.listen((secs) {
       _watchTimerValue.value = Duration(seconds: secs).formatTime();
     });
-    _isHostingNotifier.addListener(() {
+    _isHostingNotifier.addListener(() async {
       if(_isHostingNotifier.value) {
         _stopWatchTimer.onStartTimer();
       } else {
-        _stopWatchTimer.onStopTimer();
         _stopWatchTimer.onResetTimer();
       }
     });
+
+    // mode switcher
+    _twoModeSwitcher = TwoModeSwitcher(
+      key: _twoModeSwitcherKey,
+      switchInitValue: true,
+      onValueChanged: (mode) => context.switchingModes(
+        newMode: mode == true ? FunctionMode.server : FunctionMode.client,
+        confirmCallback: (isUserAgreed) {
+          if(isUserAgreed) {
+            _stopHosting(isForce: true);
+            context.goNamed(mClientPath);
+          } else {
+            _twoModeSwitcherKey.currentState?.updateExternalValue(true);
+          }
+        },
+      ),
+    );
   }
 
   @override
-  void dispose() async {
-    _stopHosting(isForce: true);
-
-    _ipTextController.dispose();
-    _portTextController.dispose();
-    _fileDirectoryTextController.dispose();
-    _pickedDir.dispose();
-
-    _loggerController.dispose();
-    _loggerScrollBarController.dispose();
-    _logBuffer.dispose();
-
-    _isHostingNotifier.dispose();
-    _serverNotifier.dispose();
-
-    await _stopWatchTimer.dispose();
+  void dispose() {
+    _disposeAllThings();
     super.dispose();
   }
 
@@ -110,38 +125,18 @@ class _ServerWidgetState extends State<ServerWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Align(
-          alignment: Alignment.centerRight,
-          child: ValueListenableBuilder(
-            valueListenable: _isHostingNotifier,
-            builder: (BuildContext context, bool value, Widget? child) {
-              return value ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.circle, size: 12.0, color: Colors.red),
-                  const SizedBox(width: 8.0),
-                  ValueListenableBuilder(
-                    valueListenable: _watchTimerValue,
-                    builder: (BuildContext context, String value, Widget? child) {
-                      return Text(
-                        value.isEmpty ? '00:00:00' : value,
-                        style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
-                      );
-                    },
-                  ),
-                ],
-              ) : const SizedBox.shrink();
-            },
-          ),
-        ),
+        centerTitle: false,
+        title: _twoModeSwitcher,
+        actions: [
+          _buildAppBarActions()
+        ],
       ),
       body: Container(
         alignment: Alignment.center,
         margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
         child: ValueListenableBuilder(
             valueListenable: _isHostingNotifier,
-            builder: (BuildContext context, bool value, Widget? child) {
+            builder: (BuildContext context, bool isServerStarted, Widget? child) {
               return Column(
                 children: [
                   const SizedBox(height: 8.0),
@@ -149,17 +144,17 @@ class _ServerWidgetState extends State<ServerWidget> {
                     width: MediaQuery.of(context).size.width * 2 / 3,
                     child: Column(
                       children: [
-                        _buildIPPortRow(value),
+                        _buildIPPortRow(isServerStarted),
                         const SizedBox(height: 8.0),
-                        _buildDirPickerRow(value),
+                        _buildDirPickerRow(isServerStarted),
                       ],
                     ),
                   ),
                   const SizedBox(height: 28.0),
-                  _buildStartHostingButton(value),
+                  _buildStartHostingButton(isServerStarted),
                   const SizedBox(height: 28.0),
                   Expanded(
-                    child: _buildLogOutput(value),
+                    child: _buildLogOutput(isServerStarted),
                   ),
                 ],
               );
@@ -168,19 +163,45 @@ class _ServerWidgetState extends State<ServerWidget> {
     );
   }
 
-  _buildIPPortRow(value) => AddressFieldWidget(
-    ipTextController: _ipTextController,
-    portTextController: _portTextController,
-    isEnableIP: !value,
-    isEnablePort: !value,
+  _buildAppBarActions() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    child: ValueListenableBuilder(
+      valueListenable: _isHostingNotifier,
+      builder: (BuildContext context, bool value, Widget? child) {
+        return value ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.circle, size: 12.0, color: Colors.red),
+            const SizedBox(width: 8.0),
+            ValueListenableBuilder(
+              valueListenable: _watchTimerValue,
+              builder: (BuildContext context, String value, Widget? child) {
+                return Text(
+                  value.isEmpty ? '00:00:00' : value,
+                  style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                );
+              },
+            ),
+          ],
+        ) : const SizedBox.shrink();
+      },
+    ),
   );
 
-  _buildDirPickerRow(value) => IntrinsicHeight(
+  _buildIPPortRow(isServerStarted) => AddressFieldWidget(
+    ipTextController: _ipTextController,
+    portTextController: _portTextController,
+    isEnableIP: !isServerStarted,
+    isEnablePort: !isServerStarted,
+  );
+
+  _buildDirPickerRow(isServerStarted) => IntrinsicHeight(
         child: Row(
           children: [
             Expanded(
               child: TextField(
-                enabled: !value,
+                enabled: !isServerStarted,
                 controller: _fileDirectoryTextController,
                 keyboardType: TextInputType.text,
                 decoration: const InputDecoration(
@@ -196,15 +217,15 @@ class _ServerWidgetState extends State<ServerWidget> {
             SizedBox(
               width: 72.0,
               child: MaterialButton(
-                elevation: !value ? 4.0 : 0.0,
+                elevation: !isServerStarted ? 4.0 : 0.0,
                 height: double.infinity,
-                color: !value
+                color: !isServerStarted
                     ? Theme.of(context).colorScheme.primaryContainer
                     : Theme.of(context).scaffoldBackgroundColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                onPressed: () => !value ? _onClickSelectDirPath() : null,
+                onPressed: () => !isServerStarted ? _onClickSelectDirPath() : null,
                 child: const SizedBox(
                   child: Icon(
                     Icons.drive_folder_upload,
@@ -217,20 +238,20 @@ class _ServerWidgetState extends State<ServerWidget> {
         ),
       );
 
-  _buildStartHostingButton(value) => FloatingActionButton.extended(
-        backgroundColor: value ? Colors.redAccent : Colors.blueAccent,
+  _buildStartHostingButton(isServerStarted) => FloatingActionButton.extended(
+        backgroundColor: isServerStarted ? Colors.redAccent : Colors.blueAccent,
         onPressed: () => _onClickStart(
           ipAddress: _ipTextController.text,
           port: int.parse(_portTextController.text),
         ),
         icon: const Icon(Icons.wifi_tethering, color: Colors.white),
         label: Text(
-          value ? 'Stop hosting' : 'Start hosting',
+          isServerStarted ? 'Stop hosting' : 'Start hosting',
           style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
         ),
       );
 
-  _buildLogOutput(value) => ValueListenableBuilder(
+  _buildLogOutput(isServerStarted) => ValueListenableBuilder(
         valueListenable: _logBuffer,
         builder: (BuildContext context, StringBuffer value, Widget? child) {
           _loggerController.text = value.toString();
@@ -407,7 +428,37 @@ class _ServerWidgetState extends State<ServerWidget> {
 
   _exposeLogger({required String message}) {
     debugPrint(message);
-    _logBuffer.value.writeln(message);
-    _logBuffer.notifyListeners();
+    _logBuffer.appendLog(message: message);
+  }
+
+  _disposeAllThings() {
+    _stopHosting(isForce: true);
+
+    _ipTextController.dispose();
+    _portTextController.dispose();
+    _fileDirectoryTextController.dispose();
+    _pickedDir.dispose();
+
+    _loggerController.dispose();
+    _loggerScrollBarController.dispose();
+    _logBuffer.dispose();
+
+    _isHostingNotifier.dispose();
+    _serverNotifier.dispose();
+
+    _watchTimerValue.dispose();
+    _stopWatchTimer.dispose();
+
+    debugPrint('Disconnected Server!');
+  }
+}
+
+// This class is to fix the error of not updating the UI when updating the StringBuffer's value.
+class LogNotifier extends ValueNotifier<StringBuffer> {
+  LogNotifier(super.value);
+
+  void appendLog({required String message}) {
+    value.writeln(message);
+    notifyListeners();
   }
 }

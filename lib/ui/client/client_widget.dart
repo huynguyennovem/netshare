@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:go_router/go_router.dart';
+import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/repository/file_repository.dart';
 import 'package:netshare/service/download_service.dart';
@@ -15,12 +17,14 @@ import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/ui/client/connect_widget.dart';
 import 'package:netshare/ui/client/navigation_widget.dart';
+import 'package:netshare/ui/common_view/two_modes_switcher.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:provider/provider.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/list_file/list_shared_files_widget.dart';
 import 'package:netshare/util/extension.dart';
+import 'package:netshare/entity/function_mode.dart';
 
 class ClientWidget extends StatefulWidget {
   const ClientWidget({super.key});
@@ -34,6 +38,9 @@ class _ClientWidgetState extends State<ClientWidget> {
   final ReceivePort _port = ReceivePort();
   final fileRepository = getIt.get<FileRepository>();
 
+  late TwoModeSwitcher _twoModeSwitcher;
+  final GlobalKey<TwoModeSwitcherState> _twoModeSwitcherKey = GlobalKey<TwoModeSwitcherState>();
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +53,7 @@ class _ClientWidgetState extends State<ClientWidget> {
     });
     _initDownloadModule();
     _downloadStreamListener();
+    _initSwitcher();
   }
 
   void _initDownloadModule() {
@@ -119,6 +127,24 @@ class _ClientWidgetState extends State<ClientWidget> {
     });
   }
 
+  void _initSwitcher() {
+    _twoModeSwitcher = TwoModeSwitcher(
+      key: _twoModeSwitcherKey,
+      switchInitValue: false,
+      onValueChanged: (mode) => context.switchingModes(
+        newMode: mode == true ? FunctionMode.server : FunctionMode.client,
+        confirmCallback: (isUserAgreed) {
+          if(isUserAgreed) {
+            _disconnect();
+            context.goNamed(mServerPath);
+          } else {
+            _twoModeSwitcherKey.currentState?.updateExternalValue(false);
+          }
+        },
+      ),
+    );
+  }
+
   @pragma('vm:entry-point')
   static void downloadCallback(
     String id,
@@ -140,6 +166,7 @@ class _ClientWidgetState extends State<ClientWidget> {
     if (UtilityFunctions.isMobile) {
       IsolateNameServer.removePortNameMapping('downloader_send_port');
     }
+    debugPrint('Disconnected Client!');
     super.dispose();
   }
 
@@ -150,47 +177,27 @@ class _ClientWidgetState extends State<ClientWidget> {
       final connectedIPAddress = value.connectedIPAddress;
       return Scaffold(
         appBar: AppBar(
-          centerTitle: true,
-          title: connectionStatus == ConnectionStatus.connected
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    connectionStatus == ConnectionStatus.connected
-                        ? const Icon(Icons.circle, size: 12.0, color: Colors.green)
-                        : const Icon(Icons.circle, size: 12.0, color: Colors.grey),
-                    const SizedBox(width: 6.0),
-                    Text(
-                      connectedIPAddress,
-                      style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
-                    ),
-                  ],
-                )
-              : Text(
-                  'NetShare',
-                  style: CommonTextStyle.textStyleNormal.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18.0,
-                  ),
-                ),
-          leading: UtilityFunctions.isDesktop
-              ? IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.white,
-                  ),
-                )
-              : null,
+          centerTitle: false,
+          title: _twoModeSwitcher,
           actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                connectionStatus == ConnectionStatus.connected
+                    ? const Icon(Icons.circle, size: 12.0, color: Colors.green)
+                    : const Icon(Icons.circle, size: 12.0, color: Colors.grey),
+                const SizedBox(width: 6.0),
+                Text(
+                  connectedIPAddress,
+                  style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                ),
+              ],
+            ),
             connectionStatus == ConnectionStatus.connected
                 ? IconButton(
                     onPressed: () {
-                      context.read<ConnectionProvider>().disconnect();
-                      context.read<FileProvider>().clearAllFiles();
+                      _disconnect();
                     },
                     icon: const Icon(Icons.link_off),
                   )
@@ -257,5 +264,10 @@ class _ClientWidgetState extends State<ClientWidget> {
         });
       },
     );
+  }
+
+  _disconnect() {
+    context.read<ConnectionProvider>().disconnect();
+    context.read<FileProvider>().clearAllFiles();
   }
 }
