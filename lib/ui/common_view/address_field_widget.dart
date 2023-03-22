@@ -24,11 +24,16 @@ class AddressFieldWidget extends StatelessWidget {
             enabled: isEnableIP ?? true,
             controller: ipTextController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: '192.168.1.100',
+              hintStyle: const TextStyle(color: Colors.black26),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black12),
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
               ),
             ),
           ),
@@ -40,11 +45,18 @@ class AddressFieldWidget extends StatelessWidget {
             enabled: isEnablePort ?? true,
             controller: portTextController,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
+            maxLength: 4,
+            decoration: InputDecoration(
               hintText: '8080',
+              hintStyle: const TextStyle(color: Colors.black26),
+              counterText: '',
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black12),
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
               ),
             ),
           ),
