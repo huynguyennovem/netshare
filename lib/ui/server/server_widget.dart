@@ -141,7 +141,7 @@ class _ServerWidgetState extends State<ServerWidget> {
                 children: [
                   const SizedBox(height: 8.0),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 2 / 3,
+                    width: MediaQuery.of(context).size.width * 3 / 4,
                     child: Column(
                       children: [
                         _buildIPPortRow(isServerStarted),
@@ -189,11 +189,18 @@ class _ServerWidgetState extends State<ServerWidget> {
     ),
   );
 
-  _buildIPPortRow(isServerStarted) => AddressFieldWidget(
-    ipTextController: _ipTextController,
-    portTextController: _portTextController,
-    isEnableIP: !isServerStarted,
-    isEnablePort: !isServerStarted,
+  _buildIPPortRow(isServerStarted) => Row(
+    children: [
+      Expanded(
+        child: AddressFieldWidget(
+          ipTextController: _ipTextController,
+          portTextController: _portTextController,
+          isEnableIP: !isServerStarted,
+          isEnablePort: !isServerStarted,
+        ),
+      ),
+      UtilityFunctions.isDesktop ? const SizedBox(width: 80.0) : const SizedBox(width: 8.0),
+    ],
   );
 
   _buildDirPickerRow(isServerStarted) => IntrinsicHeight(
@@ -204,11 +211,16 @@ class _ServerWidgetState extends State<ServerWidget> {
                 enabled: !isServerStarted,
                 controller: _fileDirectoryTextController,
                 keyboardType: TextInputType.text,
-                decoration: const InputDecoration(
-                  hintText: '/Users/username/directory',
+                decoration: InputDecoration(
+                  hintText: 'Pick the sharing path here',
+                  hintStyle: const TextStyle(color: Colors.black26),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                    borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                  ),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black12),
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                    borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                   ),
                 ),
               ),
@@ -234,6 +246,26 @@ class _ServerWidgetState extends State<ServerWidget> {
                 ),
               ),
             ),
+            const SizedBox(width: 8.0),
+            UtilityFunctions.isDesktop
+                ? SizedBox(
+                    width: 72,
+                    child: MaterialButton(
+                      height: double.infinity,
+                      color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      onPressed: () => _openNativeFolder(),
+                      child: const SizedBox(
+                        child: Icon(
+                          Icons.open_in_new,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ],
         ),
       );
@@ -313,26 +345,24 @@ class _ServerWidgetState extends State<ServerWidget> {
 
   void _startHosting(ipAddress, port) async {
     final address = '$ipAddress:$port';
+    final dir = Directory(_fileDirectoryTextController.text);
+    if(!dir.existsSync()) {
+      context.showSnackbar('Sharing path does not exist. Try again!');
+      return;
+    }
 
     // Router instance to handler requests.
-    // Use shelf_router.Router(notFoundHandler: _staticHandler(_pickedDir.value.path))
+    // Use shelf_router.Router(notFoundHandler: _staticHandler(dir.path))
     // as a fallback for static handler (may use this later)
     final routerHandler = shelf_router.Router()
       ..get('/files', (request) => _getFilesHandler(request, address))
       ..post('/upload', (request) => _uploadFileHandler(request, address));
 
     // static handler always in the first order in list handlers
-    Cascade cascade;
-    if (_pickedDir.value.existsSync()) {
-      cascade = Cascade()
-          .add(_staticHandler(_pickedDir.value.path))
+    Cascade cascade = Cascade()
+          .add(_staticHandler(dir.path))
           .add(routerHandler)
           .add(_undefinedHandler);
-    } else {
-      cascade = Cascade()
-          .add(routerHandler)
-          .add(_undefinedHandler);
-    }
     var handler = const Pipeline()
         .addMiddleware(logRequests(logger: (message, isError) => _exposeLogger(message: message)))
         .addHandler(cascade.handler);
@@ -450,6 +480,10 @@ class _ServerWidgetState extends State<ServerWidget> {
     _stopWatchTimer.dispose();
 
     debugPrint('Disconnected Server!');
+  }
+
+  _openNativeFolder() {
+
   }
 }
 
