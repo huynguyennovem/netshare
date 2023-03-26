@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:netshare/config/constants.dart';
@@ -49,6 +50,8 @@ class _ServerWidgetState extends State<ServerWidget> {
 
   late TwoModeSwitcher _twoModeSwitcher;
   final GlobalKey<TwoModeSwitcherState> _twoModeSwitcherKey = GlobalKey<TwoModeSwitcherState>();
+
+  static const _platformChannel = MethodChannel('com.app.netshare/open-sharing-dir');
 
   @override
   void initState() {
@@ -256,7 +259,7 @@ class _ServerWidgetState extends State<ServerWidget> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      onPressed: () => _openNativeFolder(),
+                      onPressed: () => _openNativeDirectory(_fileDirectoryTextController.text),
                       child: const SizedBox(
                         child: Icon(
                           Icons.open_in_new,
@@ -482,8 +485,20 @@ class _ServerWidgetState extends State<ServerWidget> {
     debugPrint('Disconnected Server!');
   }
 
-  _openNativeFolder() {
-
+  _openNativeDirectory(String path) async {
+    try {
+      final rs = await _platformChannel.invokeMethod<bool>('openSharingDir', {'path': path});
+      if(rs != null && rs) {
+        debugPrint('Opened directory: $path');
+      } else {
+        if (mounted) {
+          context.showSnackbar('Sharing directory is not found!');
+        }
+      }
+      throw PlatformException(code: '404', message: 'Sharing directory is not found!');
+    } on PlatformException catch (e) {
+      debugPrint('Failed to open sharing directory: ${e.message}');
+    }
   }
 }
 
