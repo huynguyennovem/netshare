@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:netshare/config/constants.dart';
@@ -17,6 +18,7 @@ import 'package:netshare/ui/common_view/two_modes_switcher.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:mime/mime.dart';
+import 'package:open_dir/open_dir.dart';
 import 'package:path/path.dart' as path;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -256,7 +258,7 @@ class _ServerWidgetState extends State<ServerWidget> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      onPressed: () => _openNativeFolder(),
+                      onPressed: () => _openNativeDirectory(_fileDirectoryTextController.text),
                       child: const SizedBox(
                         child: Icon(
                           Icons.open_in_new,
@@ -482,8 +484,20 @@ class _ServerWidgetState extends State<ServerWidget> {
     debugPrint('Disconnected Server!');
   }
 
-  _openNativeFolder() {
-
+  _openNativeDirectory(String path) async {
+    try {
+      final openDirPlugin = OpenDir();
+      final rs = await openDirPlugin.openNativeDir(path: path);
+      if(rs != null && rs) {
+        debugPrint('Opened directory: $path');
+      } else {
+        if (mounted) {
+          context.showSnackbar('Sharing directory is not found!');
+        }
+      }
+    } on PlatformException catch (e) {
+      debugPrint('Failed to open native directory: ${e.message}');
+    }
   }
 }
 
