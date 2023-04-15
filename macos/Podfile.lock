@@ -4,6 +4,8 @@ PODS:
   - FlutterMacOS (1.0.0)
   - network_info_plus (0.0.1):
     - FlutterMacOS
+  - open_dir_macos (0.0.1):
+    - FlutterMacOS
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -17,6 +19,7 @@ DEPENDENCIES:
   - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - network_info_plus (from `Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos`)
+  - open_dir_macos (from `Flutter/ephemeral/.symlinks/plugins/open_dir_macos/macos`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -28,6 +31,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   network_info_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos
+  open_dir_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/open_dir_macos/macos
   path_provider_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   share_plus:
@@ -39,6 +44,7 @@ SPEC CHECKSUMS:
   device_info_plus: 5401765fde0b8d062a2f8eb65510fb17e77cf07f
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   network_info_plus: f4fbc7877ab7b3294500d9441dfa53cd54972d05
+  open_dir_macos: 9649018f88e71eb9fb8aa3d95caec30a73c08c5b
   path_provider_foundation: 37748e03f12783f9de2cb2c4eadfaa25fe6d4852
   share_plus: 76dd39142738f7a68dd57b05093b5e8193f220f7
   shared_preferences_foundation: 297b3ebca31b34ec92be11acd7fb0ba932c822ca
