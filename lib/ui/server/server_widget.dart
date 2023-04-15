@@ -15,6 +15,7 @@ import 'package:netshare/entity/function_mode.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/ui/common_view/address_field_widget.dart';
 import 'package:netshare/ui/common_view/two_modes_switcher.dart';
+import 'package:netshare/ui/server/qr_popup.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:mime/mime.dart';
@@ -185,6 +186,8 @@ class _ServerWidgetState extends State<ServerWidget> {
                 );
               },
             ),
+            const SizedBox(width: 16.0),
+            QRMenuPopup(ipAddress: _ipTextController.text, port: _portTextController.text),
           ],
         ) : const SizedBox.shrink();
       },
