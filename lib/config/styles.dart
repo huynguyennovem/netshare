@@ -7,6 +7,13 @@ class CommonTextStyle {
     fontStyle: FontStyle.normal,
     fontWeight: FontWeight.normal,
   );
+
+  static const textStyleAppbar = TextStyle(
+    color: Colors.white,
+    fontSize: 20.0,
+    fontStyle: FontStyle.normal,
+    fontWeight: FontWeight.normal,
+  );
 }
 
 class CommonButtonStyle {

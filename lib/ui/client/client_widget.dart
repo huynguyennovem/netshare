@@ -136,6 +136,9 @@ class _ClientWidgetState extends State<ClientWidget> {
         confirmCallback: (isUserAgreed) {
           if(isUserAgreed) {
             _disconnect();
+            // force using goNamed instead of pushName, due to:
+            // Client and Server widget are sibling widgets, not descendants
+            // Need replacing to target route, not adding
             context.goNamed(mServerPath);
           } else {
             _twoModeSwitcherKey.currentState?.updateExternalValue(false);
@@ -219,33 +222,64 @@ class _ClientWidgetState extends State<ClientWidget> {
   }
 
   _buildConnectOptions() => Container(
-    margin: const EdgeInsets.only(bottom: 12.0),
+    margin: const EdgeInsets.only(bottom: 12.0, left: 8.0, right: 8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // FloatingActionButton.extended(
-            //   heroTag: const Text("Scan"),
-            //   onPressed: () => _onClickScanButton(),
-            //   label: const Text('Scan to connect'),
-            //   icon: const Icon(Icons.qr_code_scanner),
-            // ),
-            // const SizedBox(width: 20.0),
-            FloatingActionButton.extended(
-              heroTag: const Text("Manual"),
-              onPressed: () => _onClickManualButton(),
-              label: Text(
-                'Manual connect',
-                style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.black),
+            UtilityFunctions.isMobile
+                ? Row(
+                    children: [
+                      FloatingActionButton.extended(
+                        heroTag: const Text("Scan"),
+                        onPressed: () => _onClickScanButton(),
+                        label: Text(
+                          'Scan to connect',
+                          style: CommonTextStyle.textStyleNormal.copyWith(
+                            color: Colors.black,
+                            fontSize: 14.0,
+                          ),
+                        ),
+                        icon: const Icon(Icons.qr_code_scanner),
+                      ),
+                      const SizedBox(width: 16.0),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+            Expanded(
+              child: FloatingActionButton.extended(
+                heroTag: const Text("Manual"),
+                onPressed: () => _onClickManualButton(),
+                label: Text(
+                  'Manual connect',
+                  style: CommonTextStyle.textStyleNormal.copyWith(
+                    color: Colors.black,
+                    fontSize: 14.0,
+                  ),
+                ),
+                icon: const Icon(Icons.account_tree),
               ),
-              icon: const Icon(Icons.account_tree),
             ),
           ],
         ),
   );
 
-  // void _onClickScanButton() {
-  //   context.go(Utilities.getRoutePath(name: mScanningWidget));
-  // }
+  void _onClickScanButton() async {
+    final isPermissionGranted = await UtilityFunctions.checkCameraPermission(
+      onPermanentlyDenied: () => context.showOpenSettingsDialog(),
+    );
+    if(isPermissionGranted) {
+      if(mounted) {
+        final result = await context.pushNamed<bool>(mScanningPath);
+        if(result == true) {
+          _syncFiles();
+        }
+      }
+    } else {
+      if (mounted) {
+        context.showSnackbar('Need Camera permission to continue');
+      }
+    }
+  }
 
   void _onClickManualButton() {
     showModalBottomSheet(
@@ -255,12 +289,7 @@ class _ClientWidgetState extends State<ClientWidget> {
       builder: (bsContext) {
         return ConnectWidget(onConnected: () async {
           Navigator.pop(context);
-
-          // auto reload files
-          final files = (await fileRepository.getSharedFilesWithState()).getOrElse(() => {});
-          if (mounted) {
-          context.read<FileProvider>().addAllSharedFiles(sharedFiles: files);
-          }
+          _syncFiles();
         });
       },
     );
@@ -269,5 +298,12 @@ class _ClientWidgetState extends State<ClientWidget> {
   _disconnect() {
     context.read<ConnectionProvider>().disconnect();
     context.read<FileProvider>().clearAllFiles();
+  }
+
+  _syncFiles() async {
+    final files = (await fileRepository.getSharedFilesWithState()).getOrElse(() => {});
+    if (mounted) {
+    context.read<FileProvider>().addAllSharedFiles(sharedFiles: files);
+    }
   }
 }

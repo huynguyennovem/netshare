@@ -109,6 +109,9 @@ class _ServerWidgetState extends State<ServerWidget> {
         confirmCallback: (isUserAgreed) {
           if(isUserAgreed) {
             _stopHosting(isForce: true);
+            // force using goNamed instead of pushName, due to:
+            // Client and Server widget are sibling widgets, not descendants
+            // Need replacing to target route, not adding
             context.goNamed(mClientPath);
           } else {
             _twoModeSwitcherKey.currentState?.updateExternalValue(true);
