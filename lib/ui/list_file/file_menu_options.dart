@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
-import 'package:netshare/ui/common_view/confirm_dialog.dart';
 import 'package:netshare/service/download_service.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class FileMenuOptions extends StatefulWidget {
   final Function onComplete;
@@ -85,7 +83,7 @@ class _FileMenuOptionsState extends State<FileMenuOptions> {
       final needGrantPermission = await UtilityFunctions.isNeedGrantStoragePermission;
       if (needGrantPermission) {
         final isPermissionGranted = await UtilityFunctions.checkStoragePermission(
-          onPermanentlyDenied: () => showOpenSettingsDialog(context),
+          onPermanentlyDenied: () => context.showOpenSettingsDialog(),
         );
         if (isPermissionGranted) {
           getIt.get<DownloadService>().startDownloading(url, onError: (error) {
@@ -124,27 +122,4 @@ class _FileMenuOptionsState extends State<FileMenuOptions> {
     }
   }
 
-  showOpenSettingsDialog(BuildContext context) {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        return ConfirmDialog(
-          header: Text(
-            'Open Settings',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          body: const Text(
-            'You need to grant permission from app\'s Settings',
-            textAlign: TextAlign.center,
-          ),
-          onConfirm: () => openAppSettings(),
-        );
-      },
-    );
-  }
 }

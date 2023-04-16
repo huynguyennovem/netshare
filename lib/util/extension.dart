@@ -7,6 +7,7 @@ import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/entity/shared_file_state.dart';
 import 'package:netshare/ui/common_view/confirm_dialog.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 
 extension ContextExt on BuildContext {
 
@@ -57,6 +58,31 @@ extension ContextExt on BuildContext {
       },
     );
   }
+
+  showOpenSettingsDialog() {
+    showDialog(
+      barrierDismissible: false,
+      context: this,
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          header: Text(
+            'Open Settings',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          body: const Text(
+            'You need to grant permission from app\'s Settings',
+            textAlign: TextAlign.center,
+          ),
+          onConfirm: () => openAppSettings(),
+        );
+      },
+    );
+  }
+
 }
 
 extension SharedFileExt on SharedFile {

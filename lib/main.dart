@@ -5,6 +5,7 @@ import 'package:netshare/plugin_management/plugins.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/provider/db_provider.dart';
 import 'package:netshare/provider/file_provider.dart';
+import 'package:netshare/ui/client/scan_qr_widget.dart';
 import 'package:netshare/ui/navigation_widget.dart';
 import 'package:netshare/ui/client/client_widget.dart';
 import 'package:netshare/ui/receive/receive_widget.dart';
@@ -71,6 +72,11 @@ class MyApp extends StatelessWidget {
               name: mReceivePath,
               path: mReceivePath,
               builder: (BuildContext context, GoRouterState state) => const ReceiveWidget(),
+            ),
+            GoRoute(
+              name: mScanningPath,
+              path: mScanningPath,
+              builder: (BuildContext context, GoRouterState state) => const ScanQRWidget(),
             ),
           ],
       ),

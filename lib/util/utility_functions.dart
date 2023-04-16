@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dartz/dartz.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -51,6 +52,37 @@ class UtilityFunctions {
     }
   }
 
+  static Future<bool> checkCameraPermission({
+    Function? onGranted,
+    Function? onDenied,
+    Function? onPermanentlyDenied,
+  }) async {
+    final status = await Permission.camera.status;
+    switch (status) {
+      case PermissionStatus.granted:
+        onGranted?.call();
+        return true;
+      case PermissionStatus.permanentlyDenied:
+        onPermanentlyDenied?.call();
+        return false;
+      default:
+        {
+          final requested = await Permission.camera.request();
+          switch (requested) {
+            case PermissionStatus.granted:
+              onGranted?.call();
+              return true;
+            case PermissionStatus.permanentlyDenied:
+              onPermanentlyDenied?.call();
+              return false;
+            default:
+              onDenied?.call();
+              return false;
+          }
+        }
+    }
+  }
+
   static Future<int> get androidSDKVersion async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     final androidInfo = await deviceInfoPlugin.androidInfo;
@@ -63,5 +95,40 @@ class UtilityFunctions {
     }
     final sdkVersion = await androidSDKVersion;
     return 28 >= sdkVersion;
+  }
+
+  /// Parse ip (v4) address with [rawInput] which has format:
+  /// ip:port (eg: 192.168.0.100:8080)
+  static Tuple2<String, int> parseIPAddress(String rawInput) {
+    void error(String msg) {
+      throw FormatException('Illegal IPv4 address, $msg');
+    }
+
+    if (rawInput.isEmpty || !rawInput.contains(':')) {
+      error('IP is empty or wrong input format');
+    }
+
+    final addressParts = rawInput.split(':');
+    final ip = addressParts[0];
+    final port = addressParts[1];
+
+    final ipBlocks = ip.split('.');
+    if (ipBlocks.length != 4) {
+      error('IP address should contain exactly 4 parts');
+    }
+    for (var e in ipBlocks) {
+      int? byte = int.tryParse(e);
+      if (null == byte) {
+        error('one of IP part is not an integer');
+      }
+      if (byte! < 0 || byte > 255) {
+        error('each part must be in the range of `0..255`');
+      }
+    }
+    int? intPort = int.tryParse(port);
+    if (null == intPort) {
+      error('port is not an integer');
+    }
+    return Tuple2(ip, intPort!);
   }
 }
