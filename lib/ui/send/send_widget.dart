@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:go_router/go_router.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
@@ -10,7 +9,8 @@ import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/list_file/file_tile.dart';
 import 'package:netshare/util/extension.dart';
-import 'package:path/path.dart';
+import 'package:netshare/util/utility_functions.dart';
+import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 
 class SendWidget extends StatefulWidget {
@@ -28,92 +28,193 @@ class _SendWidgetState extends State<SendWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(8.0),
-          ),
-        ),
-        automaticallyImplyLeading: false,
         title: Text(
           'Send',
           style: CommonTextStyle.textStyleNormal.copyWith(fontSize: 20.0, color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => context.pop(),
+        centerTitle: false,
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  _buildBody() {
+    if(UtilityFunctions.isMobile) {
+      return _buildBodyMobile();
+    } else {
+      return _buildBodyDesktop();
+    }
+  }
+
+  _buildBodyMobile() => SizedBox(
+    width: double.maxFinite,
+    child: Column(
+      children: [
+        _filePickerButton(),
+        Expanded(child: _mainListFiles()),
+        _buttonUpload(),
+      ],
+    ),
+  );
+
+  _buildBodyDesktop() => Column(
+    children: [
+      Expanded(
+        child: Row(
+          children: [
+            _filePickerDragDropSupport(),
+            Expanded(child: _mainListFiles()),
+          ],
+        ),
+      ),
+      _buttonUpload(),
+    ],
+  );
+
+  _filePickerDragDropSupport() => Wrap(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(20.0),
+        alignment: Alignment.center,
+        margin: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 32.0, top: 16.0),
+        decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          shadows: const [
+            BoxShadow(
+              offset: Offset(1.5, 2.5),
+              blurStyle: BlurStyle.outer,
+              blurRadius: 8.0,
+              color: Colors.black26,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.file_open_rounded, color: Colors.black38),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Text(
+                          'Drag and drop files here',
+                          style: CommonTextStyle.textStyleNormal.copyWith(
+                            color: Colors.black38,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text('or',
+                    style: CommonTextStyle.textStyleNormal.copyWith(
+                      color: Colors.black38,
+                    ),
+                  ),
+                ],
+              ),
+              _filePickerButton(),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+
+  _filePickerButton() => Container(
+    margin: const EdgeInsets.only(top: 16.0),
+    child: MaterialButton(
+      onPressed: () => _pickFile(),
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+      color: Theme.of(context).colorScheme.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.add_box, color: Colors.white),
+          const SizedBox(width: 8.0),
+          Text(
+            'Pick files',
+            style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
           ),
         ],
       ),
-      body: SizedBox(
-        width: double.maxFinite,
-        child: Column(
+    ),
+  );
+
+  _mainListFiles() => _pickedFile.isEmpty
+      ? Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 32.0),
-            FloatingActionButton.large(
-              heroTag: const Text("File picker"),
-              shape: const CircleBorder(),
-              backgroundColor: Colors.blueAccent,
-              onPressed: () => _pickFile(),
-              child: const Icon(Icons.add, size: 32.0, color: Colors.white),
+            Image.asset(
+              'assets/images/ic_empty.png',
+              color: Theme.of(context).colorScheme.secondary,
+              width: 48.0,
+              height: 48.0,
             ),
-            const SizedBox(height: 32.0),
-            Flexible(
-              child: _pickedFile.isEmpty ? const Column(
-                children: [
-                  Text('No file picked'),
-                  Spacer(),
-                ],
-              ) : _buildListPickedFiles(),
-            ),
-            Container(
-              margin: const EdgeInsets.all(16.0),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  if(_pickedFile.isNotEmpty) {
-                    _startUploading(context, _pickedFile);
-                  }
-                },
-                label: Row(
-                  children: [
-                    const Text('Upload'),
-                    const SizedBox(width: 8.0),
-                    ValueListenableBuilder(
-                      valueListenable: _isUploading,
-                      builder: (context, value, child) => value
-                          ? const SizedBox(
-                              width: 16.0,
-                              height: 16.0,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-                icon: const Icon(Icons.upload),
-              ),
-            ),
+            const Text('No picked file', style: CommonTextStyle.textStyleNormal),
           ],
+        )
+      : _buildListPickedFiles();
+
+  _buildListPickedFiles() {
+    final scrollController = ScrollController();
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      child: Scrollbar(
+        controller: scrollController,
+        thumbVisibility: true,
+        child: ListView.separated(
+          controller: scrollController,
+          itemBuilder: (context, index) {
+            final file = _pickedFile[index];
+            return FileTile(
+                  sharedFile: SharedFile(name: path.basename(file.path), url: file.path),
+                  sourceScreen: SourceScreen.send,
+                );
+              },
+          separatorBuilder: (context, index) {
+            return const Divider(color: Colors.black12, height: 1.0);
+          },
+          itemCount: _pickedFile.length,
         ),
       ),
     );
   }
 
-  _buildListPickedFiles() => ListView.separated(
-    itemBuilder: (context, index) {
-      final file = _pickedFile[index];
-      return FileTile(
-            sharedFile: SharedFile(name: basename(file.path), url: file.path),
-            sourceScreen: SourceScreen.send,
-          );
-        },
-    separatorBuilder: (context, index) {
-      return const Divider(color: Colors.black12, height: 1.0);
-    },
-    itemCount: _pickedFile.length,
+  _buttonUpload() => Container(
+    margin: const EdgeInsets.all(16.0),
+    child: FloatingActionButton.extended(
+      onPressed: () {
+        if(_pickedFile.isNotEmpty) {
+          _startUploading(context, _pickedFile);
+        }
+      },
+      label: Row(
+        children: [
+          const Text('Upload files'),
+          const SizedBox(width: 8.0),
+          ValueListenableBuilder(
+            valueListenable: _isUploading,
+            builder: (context, value, child) => value
+                ? const SizedBox(
+                    width: 16.0,
+                    height: 16.0,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      color: Colors.white,
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      icon: const Icon(Icons.upload),
+    ),
   );
 
   void _pickFile() async {

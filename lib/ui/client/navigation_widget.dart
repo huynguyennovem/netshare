@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/entity/connection_status.dart';
+import 'package:netshare/util/extension.dart';
 
 class NavigationWidgets extends StatefulWidget {
   final ConnectionStatus connectionStatus;
@@ -59,7 +60,8 @@ class _NavigationWidgetsState extends State<NavigationWidgets> {
   }
 
   void _onClickReceive() {
-    if(widget.connectionStatus != ConnectionStatus.connected) return;
-    context.pushNamed(mReceivePath);
+    // if(widget.connectionStatus != ConnectionStatus.connected) return;
+    // context.pushNamed(mReceivePath);
+    context.showSnackbar('This feature is under development!');
   }
 }

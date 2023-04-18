@@ -245,7 +245,7 @@ class _ClientWidgetState extends State<ClientWidget> {
                     ],
                   )
                 : const SizedBox.shrink(),
-            Expanded(
+            Flexible(
               child: FloatingActionButton.extended(
                 heroTag: const Text("Manual"),
                 onPressed: () => _onClickManualButton(),
