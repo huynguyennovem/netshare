@@ -65,6 +65,7 @@ dependencies:
   open_dir: ^0.0.1+4
   qr_flutter: ^4.0.0
   qr_code_scanner: ^1.0.1
+  desktop_drop: ^0.4.1
 
 dev_dependencies:
   flutter_test:

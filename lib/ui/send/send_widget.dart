@@ -1,9 +1,10 @@
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
+import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/provider/file_provider.dart';
@@ -21,8 +22,16 @@ class SendWidget extends StatefulWidget {
 }
 
 class _SendWidgetState extends State<SendWidget> {
-  List<File> _pickedFile = [];
+  List<FileUpload> _pickedFile = [];
   final ValueNotifier<bool> _isUploading = ValueNotifier(false);
+  final ValueNotifier<bool> _draggingNotifier = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    super.dispose();
+    _isUploading.dispose();
+    _draggingNotifier.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,59 +80,76 @@ class _SendWidgetState extends State<SendWidget> {
     ],
   );
 
-  _filePickerDragDropSupport() => Wrap(
-    children: [
-      Container(
-        padding: const EdgeInsets.all(20.0),
-        alignment: Alignment.center,
-        margin: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 32.0, top: 16.0),
-        decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-          shadows: const [
-            BoxShadow(
-              offset: Offset(1.5, 2.5),
-              blurStyle: BlurStyle.outer,
-              blurRadius: 8.0,
-              color: Colors.black26,
-            ),
-          ],
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.file_open_rounded, color: Colors.black38),
-                      Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Text(
-                          'Drag and drop files here',
-                          style: CommonTextStyle.textStyleNormal.copyWith(
-                            color: Colors.black38,
+  _filePickerDragDropSupport() {
+    return DropTarget(
+      onDragDone: (detail) {
+        setState(() {
+          _pickedFile = _pickedFile
+            ..addAll(detail.files.map((e) => e.toFileUpload).toList());
+          _pickedFile = _pickedFile.toSet().toList(); // remove duplicate files
+        });
+      },
+      onDragEntered: (detail) {
+        _draggingNotifier.value = true;
+      },
+      onDragExited: (detail) {
+        _draggingNotifier.value = false;
+      },
+      child: Wrap(
+        children: [
+          ValueListenableBuilder(
+            valueListenable: _draggingNotifier,
+            builder: (BuildContext context, bool isDragging, Widget? child) {
+              return Container(
+                padding: const EdgeInsets.all(20.0),
+                alignment: Alignment.center,
+                margin: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 32.0, top: 16.0),
+                decoration: ShapeDecoration(
+                  color: isDragging ? Colors.black26.withAlpha(30) : Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  shadows: const [
+                    BoxShadow(
+                      offset: Offset(1.5, 2.5),
+                      blurStyle: BlurStyle.outer,
+                      blurRadius: 8.0,
+                      color: Colors.black26,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.file_open_rounded, color: Colors.black38),
+                        Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Text(
+                            'Drag and drop files here',
+                            style: CommonTextStyle.textStyleNormal.copyWith(
+                              color: Colors.black38,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text('or',
-                    style: CommonTextStyle.textStyleNormal.copyWith(
-                      color: Colors.black38,
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              _filePickerButton(),
-            ],
+                    const SizedBox(height: 8.0),
+                    Text('or',
+                      style: CommonTextStyle.textStyleNormal.copyWith(
+                        color: Colors.black38,
+                      ),
+                    ),
+                    _filePickerButton(),
+                  ],
+                ),
+              );
+            },
           ),
-        ),
+        ],
       ),
-    ],
-  );
+    );
+  }
 
   _filePickerButton() => Container(
     margin: const EdgeInsets.only(top: 16.0),
@@ -222,14 +248,15 @@ class _SendWidgetState extends State<SendWidget> {
     if (result != null) {
       setState(() {
         _pickedFile = _pickedFile
-          ..addAll(result.paths.where((element) => element != null).map((e) => File(e!)).toList());
+          ..addAll(result.paths.where((element) => element != null).map((e) => FileUpload(e!)).toList());
+        _pickedFile = _pickedFile.toSet().toList(); // remove duplicate files
       });
     } else {
       // User canceled the picker
     }
   }
 
-  void _startUploading(BuildContext context, List<File> files) async {
+  void _startUploading(BuildContext context, List<FileUpload> files) async {
     setUploadState(uploading: true);
 
     final result = await getIt<ApiService>().uploadFile(files: files);
