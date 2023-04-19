@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/entity/download/download_state.dart';
+import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/entity/function_mode.dart';
 import 'package:netshare/entity/internal_error.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
@@ -8,6 +11,7 @@ import 'package:netshare/entity/shared_file_state.dart';
 import 'package:netshare/ui/common_view/confirm_dialog.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 
 extension ContextExt on BuildContext {
 
@@ -159,4 +163,10 @@ extension DownloadStateExt on DownloadState {
 
 extension TimeFormat on Duration {
   String formatTime() => '$this'.split('.')[0].padLeft(8, '0');
+}
+
+extension XFileExtension on XFile {
+  FileUpload get toFileUpload {
+    return FileUpload(path);
+  }
 }

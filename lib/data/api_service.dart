@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +6,7 @@ import 'package:dartz/dartz.dart';
 import 'package:netshare/data/global_scope_data.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/api_error.dart';
+import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 
 class ApiService {
@@ -32,7 +32,7 @@ class ApiService {
     return const Left(ApiError.empty());
   }
 
-  Future<Either<ApiError, List<SharedFile>>> uploadFile({required List<File> files}) async {
+  Future<Either<ApiError, List<SharedFile>>> uploadFile({required List<FileUpload> files}) async {
     refreshDomain();
     final endpoint = '$domain/upload';
     var request = http.MultipartRequest("POST", Uri.parse(endpoint));

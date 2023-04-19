@@ -5,6 +5,7 @@
 import FlutterMacOS
 import Foundation
 
+import desktop_drop
 import device_info_plus
 import network_info_plus
 import open_dir_macos
@@ -13,6 +14,7 @@ import share_plus
 import shared_preferences_foundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  DesktopDropPlugin.register(with: registry.registrar(forPlugin: "DesktopDropPlugin"))
   DeviceInfoPlusMacosPlugin.register(with: registry.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))
   NetworkInfoPlusPlugin.register(with: registry.registrar(forPlugin: "NetworkInfoPlusPlugin"))
   OpenDirMacosPlugin.register(with: registry.registrar(forPlugin: "OpenDirMacosPlugin"))
