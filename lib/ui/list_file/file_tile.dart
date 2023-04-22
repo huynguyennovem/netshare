@@ -11,11 +11,13 @@ import 'package:open_filex/open_filex.dart';
 class FileTile extends StatefulWidget {
   final SharedFile sharedFile;
   final SourceScreen sourceScreen;
+  final Function? onRemoveItem;
 
   const FileTile({
     Key? key,
     required this.sharedFile,
     required this.sourceScreen,
+    this.onRemoveItem,
   }) : super(key: key);
 
   @override
@@ -23,6 +25,9 @@ class FileTile extends StatefulWidget {
 }
 
 class _FileTileState extends State<FileTile> {
+
+  final hoveringState = ValueNotifier<bool>(false);
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -36,36 +41,19 @@ class _FileTileState extends State<FileTile> {
         }
       },
       onLongPress: () => _showMenuOptions(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-        child: Row(
-          children: [
-            Icon(widget.sharedFile.fileIcon, color: Theme.of(context).colorScheme.secondary),
-            const SizedBox(width: 8.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      widget.sharedFile.name ?? 'unknown',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // const SizedBox(height: 4.0),
-                  // Text(
-                  //   widget.sharedFile.url ?? 'unknown',
-                  //   maxLines: 1,
-                  //   overflow: TextOverflow.ellipsis,
-                  //   style: const TextStyle(color: Colors.black26),
-                  // ),
-                ],
-              ),
-            ),
-            _buildFileState(),
-          ],
+      child: MouseRegion(
+        onEnter: (event) => hoveringState.value = true,
+        onExit: (event) => hoveringState.value = false,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+          child: Row(
+            children: [
+              Icon(widget.sharedFile.fileIcon, color: Theme.of(context).colorScheme.secondary),
+              _buildFileInfo(),
+              _buildFileState(),
+              _buildRemoveButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -89,6 +77,19 @@ class _FileTileState extends State<FileTile> {
     );
   }
 
+  _buildFileInfo() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        child: Text(
+          widget.sharedFile.name ?? 'unknown',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
   _buildFileState() {
     final state = widget.sharedFile.state;
     switch(state) {
@@ -104,5 +105,26 @@ class _FileTileState extends State<FileTile> {
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  _buildRemoveButton() {
+    if(SourceScreen.send != widget.sourceScreen) {
+      return const SizedBox.shrink();
+    }
+    return ValueListenableBuilder(
+      valueListenable: hoveringState,
+      builder: (context, state, child) {
+        if(!state)  return const SizedBox.shrink();
+        return InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () => widget.onRemoveItem?.call(),
+          child: const Icon(
+            Icons.remove_circle,
+            color: Colors.redAccent,
+            size: 20.0,
+          ),
+        );
+      },
+    );
   }
 }

@@ -94,6 +94,13 @@ extension SharedFileExt on SharedFile {
     if(null == name) {
       return Icons.question_mark;
     }
+    String ext;
+    try {
+      ext = p.extension(name!);
+    } catch (e) {
+      ext = '';
+    }
+    if(ext.isEmpty) return Icons.question_mark;
     final extension = p.extension(name!).substring(1).trim().toLowerCase();
     switch(extension) {
       case mTxt:  return Icons.text_fields;

@@ -22,7 +22,7 @@ class SendWidget extends StatefulWidget {
 }
 
 class _SendWidgetState extends State<SendWidget> {
-  List<FileUpload> _pickedFile = [];
+  List<FileUpload> _pickedFiles = [];
   final ValueNotifier<bool> _isUploading = ValueNotifier(false);
   final ValueNotifier<bool> _draggingNotifier = ValueNotifier<bool>(false);
 
@@ -84,9 +84,9 @@ class _SendWidgetState extends State<SendWidget> {
     return DropTarget(
       onDragDone: (detail) {
         setState(() {
-          _pickedFile = _pickedFile
+          _pickedFiles = _pickedFiles
             ..addAll(detail.files.map((e) => e.toFileUpload).toList());
-          _pickedFile = _pickedFile.toSet().toList(); // remove duplicate files
+          _pickedFiles = _pickedFiles.toSet().toList(); // remove duplicate files
         });
       },
       onDragEntered: (detail) {
@@ -172,7 +172,7 @@ class _SendWidgetState extends State<SendWidget> {
     ),
   );
 
-  _mainListFiles() => _pickedFile.isEmpty
+  _mainListFiles() => _pickedFiles.isEmpty
       ? Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -197,16 +197,23 @@ class _SendWidgetState extends State<SendWidget> {
         child: ListView.separated(
           controller: scrollController,
           itemBuilder: (context, index) {
-            final file = _pickedFile[index];
+            final file = _pickedFiles[index];
             return FileTile(
                   sharedFile: SharedFile(name: path.basename(file.path), url: file.path),
                   sourceScreen: SourceScreen.send,
+                  onRemoveItem: () {
+                    setState(() {
+                      final rawList = _pickedFiles;
+                      rawList.removeWhere((element) => element.path == file.path);
+                      _pickedFiles = rawList;
+                    });
+                  },
                 );
               },
           separatorBuilder: (context, index) {
             return const Divider(color: Colors.black12, height: 1.0);
           },
-          itemCount: _pickedFile.length,
+          itemCount: _pickedFiles.length,
         ),
       ),
     );
@@ -216,8 +223,8 @@ class _SendWidgetState extends State<SendWidget> {
     margin: const EdgeInsets.all(16.0),
     child: FloatingActionButton.extended(
       onPressed: () {
-        if(_pickedFile.isNotEmpty) {
-          _startUploading(context, _pickedFile);
+        if(_pickedFiles.isNotEmpty) {
+          _startUploading(context, _pickedFiles);
         }
       },
       label: Row(
@@ -247,9 +254,9 @@ class _SendWidgetState extends State<SendWidget> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
     if (result != null) {
       setState(() {
-        _pickedFile = _pickedFile
+        _pickedFiles = _pickedFiles
           ..addAll(result.paths.where((element) => element != null).map((e) => FileUpload(e!)).toList());
-        _pickedFile = _pickedFile.toSet().toList(); // remove duplicate files
+        _pickedFiles = _pickedFiles.toSet().toList(); // remove duplicate files
       });
     } else {
       // User canceled the picker
