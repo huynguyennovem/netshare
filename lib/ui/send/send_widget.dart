@@ -220,7 +220,7 @@ class _SendWidgetState extends State<SendWidget> {
   }
 
   _buttonUpload() => Container(
-    margin: const EdgeInsets.all(16.0),
+    margin: const EdgeInsets.only(bottom: 16.0),
     child: FloatingActionButton.extended(
       onPressed: () {
         if(_pickedFiles.isNotEmpty) {

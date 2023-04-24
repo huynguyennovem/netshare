@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:netshare/config/styles.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/entity/shared_file_state.dart';
 import 'package:netshare/entity/source_screen.dart';
+import 'package:netshare/ui/common_view/conditional_parent_widget.dart';
 import 'package:netshare/ui/list_file/file_menu_options.dart';
 import 'package:netshare/util/extension.dart';
+import 'package:netshare/util/utility_functions.dart';
 import 'package:open_filex/open_filex.dart';
 
 class FileTile extends StatefulWidget {
@@ -41,23 +44,47 @@ class _FileTileState extends State<FileTile> {
         }
       },
       onLongPress: () => _showMenuOptions(),
-      child: MouseRegion(
-        onEnter: (event) => hoveringState.value = true,
-        onExit: (event) => hoveringState.value = false,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-          child: Row(
-            children: [
-              Icon(widget.sharedFile.fileIcon, color: Theme.of(context).colorScheme.secondary),
-              _buildFileInfo(),
-              _buildFileState(),
-              _buildRemoveButton(),
-            ],
-          ),
+      child: ConditionalParentWidget(
+        condition: UtilityFunctions.isDesktop,
+        rightParent: ({child}) => MouseRegion(
+          onEnter: (event) => hoveringState.value = true,
+          onExit: (event) => hoveringState.value = false,
+          child: child ?? const SizedBox.shrink(),
         ),
+        leftParent: ({child}) => Dismissible(
+          direction: DismissDirection.endToStart,
+          key: Key(widget.sharedFile.name ?? ''),
+          onDismissed: (direction) {
+            widget.onRemoveItem?.call();
+            context.showSnackbar('${widget.sharedFile.name} is removed');
+          },
+          background: Container(
+            color: Colors.redAccent,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Remove',
+              style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+            ),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        ),
+        child: _buildCommon(),
       ),
     );
   }
+
+  _buildCommon() => Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+      child: Row(
+        children: [
+          Icon(widget.sharedFile.fileIcon, color: Theme.of(context).colorScheme.secondary),
+          _buildFileInfo(),
+          _buildFileState(),
+          _buildRemoveButton(),
+        ],
+      ),
+  );
 
   void _showMenuOptions() {
     if(SourceScreen.client != widget.sourceScreen)  return;
