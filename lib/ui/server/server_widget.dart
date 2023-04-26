@@ -108,7 +108,9 @@ class _ServerWidgetState extends State<ServerWidget> {
         newMode: mode == true ? FunctionMode.server : FunctionMode.client,
         confirmCallback: (isUserAgreed) {
           if(isUserAgreed) {
-            _stopHosting(isForce: true);
+            if(_isHostingNotifier.value) {
+              _stopHosting(isForce: true);
+            }
             // force using goNamed instead of pushName, due to:
             // Client and Server widget are sibling widgets, not descendants
             // Need replacing to target route, not adding
