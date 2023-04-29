@@ -6,9 +6,9 @@ import 'package:netshare/data/api_service.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
-import 'package:netshare/entity/source_screen.dart';
 import 'package:netshare/provider/file_provider.dart';
-import 'package:netshare/ui/list_file/file_tile.dart';
+import 'package:netshare/ui/common_view/empty_widget.dart';
+import 'package:netshare/ui/list_file/file_tile_upload.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:path/path.dart' as path;
@@ -173,18 +173,7 @@ class _SendWidgetState extends State<SendWidget> {
   );
 
   _mainListFiles() => _pickedFiles.isEmpty
-      ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/ic_empty.png',
-              color: Theme.of(context).colorScheme.secondary,
-              width: 48.0,
-              height: 48.0,
-            ),
-            const Text('No picked file', style: CommonTextStyle.textStyleNormal),
-          ],
-        )
+      ? const EmptyWidget(message: 'No picked file')
       : _buildListPickedFiles();
 
   _buildListPickedFiles() {
@@ -193,14 +182,13 @@ class _SendWidgetState extends State<SendWidget> {
       margin: const EdgeInsets.all(16.0),
       child: Scrollbar(
         controller: scrollController,
-        thumbVisibility: true,
+        thumbVisibility: false,
         child: ListView.separated(
           controller: scrollController,
           itemBuilder: (context, index) {
             final file = _pickedFiles[index];
-            return FileTile(
+            return FileTileUpload(
                   sharedFile: SharedFile(name: path.basename(file.path), url: file.path),
-                  sourceScreen: SourceScreen.send,
                   onRemoveItem: () {
                     setState(() {
                       final rawList = _pickedFiles;
