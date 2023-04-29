@@ -1,4 +1,0 @@
-enum SourceScreen {
-  client,
-  send
-}

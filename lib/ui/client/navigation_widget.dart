@@ -18,7 +18,7 @@ class _NavigationWidgetsState extends State<NavigationWidgets> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 28.0, horizontal: 28.0),
+      margin: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 28.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
