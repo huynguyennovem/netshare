@@ -263,7 +263,7 @@ class _ClientWidgetState extends State<ClientWidget> {
         ),
   );
 
-  void _onClickScanButton() async {
+  _onClickScanButton() async {
     final isPermissionGranted = await UtilityFunctions.checkCameraPermission(
       onPermanentlyDenied: () => context.showOpenSettingsDialog(),
     );
@@ -281,18 +281,38 @@ class _ClientWidgetState extends State<ClientWidget> {
     }
   }
 
-  void _onClickManualButton() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (bsContext) {
-        return ConnectWidget(onConnected: () async {
-          Navigator.pop(context);
-          _syncFiles();
-        });
-      },
-    );
+  _onClickManualButton() {
+    if(UtilityFunctions.isDesktop) {
+      showDialog(
+        context: context,
+        builder: (bsContext) {
+          return Dialog(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width / 2,
+                maxHeight: MediaQuery.of(context).size.height / 2,
+              ),
+              child: ConnectWidget(onConnected: () async {
+                Navigator.pop(context);
+                _syncFiles();
+              }),
+            ),
+          );
+        },
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        builder: (bsContext) {
+          return ConnectWidget(onConnected: () async {
+            Navigator.pop(context);
+            _syncFiles();
+          });
+        },
+      );
+    }
   }
 
   _disconnect() {
