@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AddressFieldWidget extends StatelessWidget {
   final TextEditingController ipTextController;
   final TextEditingController portTextController;
+  final Color? backgroundColor;
 
   final bool? isEnableIP;
   final bool? isEnablePort;
@@ -13,6 +14,7 @@ class AddressFieldWidget extends StatelessWidget {
     required this.portTextController,
     this.isEnableIP,
     this.isEnablePort,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -35,6 +37,8 @@ class AddressFieldWidget extends StatelessWidget {
                 borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
                 borderRadius: const BorderRadius.all(Radius.circular(8.0)),
               ),
+              filled: backgroundColor != null,
+              fillColor: backgroundColor,
             ),
           ),
         ),
@@ -58,6 +62,8 @@ class AddressFieldWidget extends StatelessWidget {
                 borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
                 borderRadius: const BorderRadius.all(Radius.circular(8.0)),
               ),
+              filled: backgroundColor != null,
+              fillColor: backgroundColor,
             ),
           ),
         ),

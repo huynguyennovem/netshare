@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/entity/connection_status.dart';
-import 'package:netshare/util/extension.dart';
 
 class NavigationWidgets extends StatefulWidget {
   final ConnectionStatus connectionStatus;
@@ -23,32 +22,24 @@ class _NavigationWidgetsState extends State<NavigationWidgets> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Builder(builder: (context) {
+            final isConnected = widget.connectionStatus == ConnectionStatus.connected;
             return FloatingActionButton.extended(
-              backgroundColor: widget.connectionStatus == ConnectionStatus.connected
-                ? Colors.blueAccent
-                : Colors.grey,
-              heroTag: const Text('Send'),
+              backgroundColor: isConnected
+                ? Theme.of(context).colorScheme.primaryContainer
+                : disabledButtonColor,
+              heroTag: const Text('Send files'),
               onPressed: () => _onClickSend(),
-              icon: const Icon(Icons.send, color: Colors.white),
+              icon: Icon(Icons.send,
+                  color: isConnected ? textIconButtonColor : textIconButtonColorActivated
+              ),
               label: Text(
-                'Send',
-                style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                'Send files',
+                style: CommonTextStyle.textStyleNormal.copyWith(
+                    color: isConnected ? textIconButtonColor : textIconButtonColorActivated,
+                ),
               ),
             );
           }),
-          const SizedBox(width: 20),
-          FloatingActionButton.extended(
-            backgroundColor: widget.connectionStatus == ConnectionStatus.connected
-              ? Colors.blueAccent
-              : Colors.grey,
-            heroTag: const Text("Receive"),
-            onPressed: () => _onClickReceive(),
-            icon: const Icon(Icons.download, color: Colors.white),
-            label: Text(
-              'Receive',
-              style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
-            ),
-          ),
         ],
       ),
     );
@@ -59,9 +50,4 @@ class _NavigationWidgetsState extends State<NavigationWidgets> {
     context.pushNamed(mSendPath);
   }
 
-  void _onClickReceive() {
-    // if(widget.connectionStatus != ConnectionStatus.connected) return;
-    // context.pushNamed(mReceivePath);
-    context.showSnackbar('This feature is under development!');
-  }
 }

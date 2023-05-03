@@ -56,6 +56,7 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
           'Scan to connect',
           style: CommonTextStyle.textStyleAppbar,
         ),
+        iconTheme: const IconThemeData(color: textIconButtonColor),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -78,7 +79,7 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
                       padding: const EdgeInsets.all(12.0),
                       alignment: Alignment.center,
                       decoration: const BoxDecoration(
-                        color: Colors.black12,
+                        color: seedColor,
                         borderRadius: BorderRadius.only(
                           bottomLeft: Radius.circular(12.0),
                           bottomRight: Radius.circular(12.0),
@@ -88,11 +89,11 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
                         valueListenable: qrScanResult,
                         builder: (context, value, child) {
                           return Text(
-                            value,
+                            'Detected result: ${value.isEmpty ? 'None' : value}',
                             textAlign: TextAlign.start,
                             style: CommonTextStyle.textStyleNormal.copyWith(
                               fontSize: 18.0,
-                              color: Colors.green,
+                              color: Theme.of(context).colorScheme.primaryContainer,
                               fontWeight: FontWeight.w400,
                             ),
                           );
@@ -109,12 +110,11 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
               children: [
                 const SizedBox(width: 24.0),
                 FloatingActionButton.extended(
-                  backgroundColor: Colors.blueAccent,
                   onPressed: () => _onClickConnect(),
-                  icon: const Icon(Icons.router_outlined, color: Colors.white),
+                  icon: const Icon(Icons.router_outlined, color: textIconButtonColor),
                   label: Text(
                     'Connect',
-                    style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                    style: CommonTextStyle.textStyleNormal.copyWith(color: textIconButtonColor),
                   ),
                 ),
                 const SizedBox(width: 8.0),

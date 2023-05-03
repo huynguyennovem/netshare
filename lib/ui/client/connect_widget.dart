@@ -58,12 +58,9 @@ class _ConnectWidgetState extends State<ConnectWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-        child: _buildMainLayout(),
-      ),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+      child: _buildMainLayout(),
     );
   }
 
@@ -85,6 +82,7 @@ class _ConnectWidgetState extends State<ConnectWidget> {
               child: AddressFieldWidget(
                 ipTextController: _ipTextController,
                 portTextController: _portTextController,
+                backgroundColor: textFieldBackgroundColor,
               ),
             ),
             const SizedBox(height: 16.0),
@@ -93,15 +91,14 @@ class _ConnectWidgetState extends State<ConnectWidget> {
               children: [
                 const SizedBox(width: 24.0),
                 FloatingActionButton.extended(
-                  backgroundColor: Colors.blueAccent,
                   onPressed: () => _onClickConnect(
                     ipAddress: _ipTextController.text,
                     port: int.parse(_portTextController.text),
                   ),
-                  icon: const Icon(Icons.router_outlined, color: Colors.white),
+                  icon: const Icon(Icons.router_outlined, color: textIconButtonColor),
                   label: Text(
                     'Connect',
-                    style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                    style: CommonTextStyle.textStyleNormal.copyWith(color: textIconButtonColor),
                   ),
                 ),
                 const SizedBox(width: 8.0),
@@ -125,6 +122,7 @@ class _ConnectWidgetState extends State<ConnectWidget> {
                 ),
               ],
             ),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
