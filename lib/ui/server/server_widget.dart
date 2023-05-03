@@ -180,17 +180,17 @@ class _ServerWidgetState extends State<ServerWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.circle, size: 12.0, color: Colors.red),
-            const SizedBox(width: 8.0),
             ValueListenableBuilder(
               valueListenable: _watchTimerValue,
               builder: (BuildContext context, String value, Widget? child) {
                 return Text(
                   value.isEmpty ? '00:00:00' : value,
-                  style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                  style: CommonTextStyle.textStyleNormal,
                 );
               },
             ),
+            const SizedBox(width: 8.0),
+            const Icon(Icons.circle, size: 12.0, color: Colors.red),
             const SizedBox(width: 16.0),
             QRMenuPopup(ipAddress: _ipTextController.text, port: _portTextController.text),
           ],
@@ -207,6 +207,7 @@ class _ServerWidgetState extends State<ServerWidget> {
           portTextController: _portTextController,
           isEnableIP: !isServerStarted,
           isEnablePort: !isServerStarted,
+          backgroundColor: textFieldBackgroundColor,
         ),
       ),
       UtilityFunctions.isDesktop ? const SizedBox(width: 80.0) : const SizedBox(width: 8.0),
@@ -232,6 +233,8 @@ class _ServerWidgetState extends State<ServerWidget> {
                     borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
                     borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                   ),
+                  filled: true,
+                  fillColor: textFieldBackgroundColor,
                 ),
               ),
             ),
@@ -251,7 +254,7 @@ class _ServerWidgetState extends State<ServerWidget> {
                 child: const SizedBox(
                   child: Icon(
                     Icons.drive_folder_upload,
-                    color: Colors.black,
+                    color: textIconButtonColor,
                   ),
                 ),
               ),
@@ -270,7 +273,7 @@ class _ServerWidgetState extends State<ServerWidget> {
                       child: const SizedBox(
                         child: Icon(
                           Icons.open_in_new,
-                          color: Colors.black,
+                          color: textIconButtonColor,
                         ),
                       ),
                     ),
@@ -281,15 +284,21 @@ class _ServerWidgetState extends State<ServerWidget> {
       );
 
   _buildStartHostingButton(isServerStarted) => FloatingActionButton.extended(
-        backgroundColor: isServerStarted ? Colors.redAccent : Colors.blueAccent,
+        backgroundColor: isServerStarted
+            ? Colors.redAccent
+            : Theme.of(context).colorScheme.primaryContainer,
         onPressed: () => _onClickStart(
           ipAddress: _ipTextController.text,
           port: int.parse(_portTextController.text),
         ),
-        icon: const Icon(Icons.wifi_tethering, color: Colors.white),
+        icon: Icon(Icons.wifi_tethering,
+            color: isServerStarted ? textIconButtonColorActivated : textIconButtonColor,
+        ),
         label: Text(
           isServerStarted ? 'Stop hosting' : 'Start hosting',
-          style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+          style: CommonTextStyle.textStyleNormal.copyWith(
+            color: isServerStarted ? textIconButtonColorActivated : textIconButtonColor,
+          ),
         ),
       );
 

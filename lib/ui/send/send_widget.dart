@@ -39,9 +39,10 @@ class _SendWidgetState extends State<SendWidget> {
       appBar: AppBar(
         title: Text(
           'Send',
-          style: CommonTextStyle.textStyleNormal.copyWith(fontSize: 20.0, color: Colors.white),
+          style: CommonTextStyle.textStyleNormal.copyWith(fontSize: 20.0),
         ),
         centerTitle: false,
+        iconTheme: const IconThemeData(color: textIconButtonColor),
       ),
       body: _buildBody(),
     );
@@ -217,7 +218,13 @@ class _SendWidgetState extends State<SendWidget> {
       },
       label: Row(
         children: [
-          const Text('Upload files'),
+          Text(
+            'Upload files',
+            style: CommonTextStyle.textStyleNormal.copyWith(
+              fontSize: 14.0,
+              color: textIconButtonColor,
+            ),
+          ),
           const SizedBox(width: 8.0),
           ValueListenableBuilder(
             valueListenable: _isUploading,
@@ -225,16 +232,13 @@ class _SendWidgetState extends State<SendWidget> {
                 ? const SizedBox(
                     width: 16.0,
                     height: 16.0,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0,
-                      color: Colors.white,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2.0),
                   )
                 : const SizedBox.shrink(),
           ),
         ],
       ),
-      icon: const Icon(Icons.upload),
+      icon: const Icon(Icons.upload, color: textIconButtonColor),
     ),
   );
 

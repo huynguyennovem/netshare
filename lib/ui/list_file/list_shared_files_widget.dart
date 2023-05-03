@@ -28,7 +28,7 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: Column(
             children: [
-              _buildHeader(),
+              files.isNotEmpty ? _buildHeader() : const SizedBox.shrink(),
               const SizedBox(height: 8.0),
               Flexible(
                 child: files.isNotEmpty
@@ -79,7 +79,7 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
           child: ElevatedButton(
             style: ButtonStyle(
               padding: MaterialStateProperty.all(EdgeInsets.zero),
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+              backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.primary),
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.0),

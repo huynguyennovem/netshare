@@ -178,6 +178,7 @@ class _ClientWidgetState extends State<ClientWidget> {
     return Consumer<ConnectionProvider>(builder: (BuildContext ct, value, Widget? child) {
       final connectionStatus = value.connectionStatus;
       final connectedIPAddress = value.connectedIPAddress;
+      final isConnected = connectionStatus == ConnectionStatus.connected;
       return Scaffold(
         appBar: AppBar(
           centerTitle: false,
@@ -187,17 +188,17 @@ class _ClientWidgetState extends State<ClientWidget> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                connectionStatus == ConnectionStatus.connected
+                isConnected
                     ? const Icon(Icons.circle, size: 12.0, color: Colors.green)
                     : const Icon(Icons.circle, size: 12.0, color: Colors.grey),
                 const SizedBox(width: 6.0),
                 Text(
                   connectedIPAddress,
-                  style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+                  style: CommonTextStyle.textStyleNormal.copyWith(color: textIconButtonColor),
                 ),
               ],
             ),
-            connectionStatus == ConnectionStatus.connected
+            isConnected
                 ? IconButton(
                     onPressed: () {
                       _disconnect();
@@ -214,7 +215,7 @@ class _ClientWidgetState extends State<ClientWidget> {
           children: [
             NavigationWidgets(connectionStatus: connectionStatus),
             const Expanded(child: ListSharedFiles()),
-            _buildConnectOptions(),
+            isConnected ? const SizedBox.shrink() : _buildConnectOptions(),
           ],
         ),
       );
@@ -235,11 +236,11 @@ class _ClientWidgetState extends State<ClientWidget> {
                         label: Text(
                           'Scan to connect',
                           style: CommonTextStyle.textStyleNormal.copyWith(
-                            color: Colors.black,
+                            color: textIconButtonColor,
                             fontSize: 14.0,
                           ),
                         ),
-                        icon: const Icon(Icons.qr_code_scanner),
+                        icon: const Icon(Icons.qr_code_scanner, color: textIconButtonColor),
                       ),
                       const SizedBox(width: 16.0),
                     ],
@@ -252,11 +253,11 @@ class _ClientWidgetState extends State<ClientWidget> {
                 label: Text(
                   'Manual connect',
                   style: CommonTextStyle.textStyleNormal.copyWith(
-                    color: Colors.black,
+                    color: textIconButtonColor,
                     fontSize: 14.0,
                   ),
                 ),
-                icon: const Icon(Icons.account_tree),
+                icon: const Icon(Icons.account_tree, color: textIconButtonColor),
               ),
             ),
           ],
@@ -287,6 +288,9 @@ class _ClientWidgetState extends State<ClientWidget> {
         context: context,
         builder: (bsContext) {
           return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width / 2,
@@ -302,14 +306,19 @@ class _ClientWidgetState extends State<ClientWidget> {
       );
     } else {
       showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         builder: (bsContext) {
-          return ConnectWidget(onConnected: () async {
-            Navigator.pop(context);
-            _syncFiles();
-          });
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: ConnectWidget(onConnected: () async {
+              Navigator.pop(context);
+              _syncFiles();
+            }),
+          );
         },
       );
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:netshare/config/styles.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/plugin_management/plugins.dart';
 import 'package:netshare/provider/connection_provider.dart';
@@ -96,8 +97,8 @@ class MyApp extends StatelessWidget {
         title: 'NetShare',
         theme: ThemeData(
           useMaterial3: true,
-          appBarTheme: const AppBarTheme(color: Colors.blueAccent),
-          iconButtonTheme: IconButtonThemeData(style: ButtonStyle(iconColor: MaterialStateProperty.all(Colors.white))),
+          appBarTheme: const AppBarTheme(color: backgroundColor),
+          colorScheme: ColorScheme.fromSeed(seedColor: seedColor, background: backgroundColor),
         ),
         routerConfig: _router,
       ),

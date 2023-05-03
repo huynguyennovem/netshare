@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/entity/download/download_state.dart';
