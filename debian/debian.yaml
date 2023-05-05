@@ -1,0 +1,14 @@
+flutter_app: 
+  command: netshare
+  arch: x64
+  parent: /usr/local/lib
+
+control:
+  Package: NetShare
+  Version: 2.0.0
+  Architecture: amd64
+  Essential: no
+  Priority: optional
+  Depends:
+  Maintainer: huynguyennovem <huynguyennovem@gmail.com>
+  Description: Data sharing in local network
