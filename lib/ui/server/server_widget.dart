@@ -370,6 +370,21 @@ class _ServerWidgetState extends State<ServerWidget> {
       return;
     }
 
+    // Additional check for Android limitation (Android 11 and above,
+    // see: https://developer.android.com/training/data-storage/manage-all-files#all-files-access-google-play)
+    final needGrantPermission = await UtilityFunctions.isNeedAccessAllFileStoragePermission;
+    if(needGrantPermission) {
+      final isPermissionGranted = await UtilityFunctions.checkManageExternalStoragePermission(
+        onPermanentlyDenied: () => context.showOpenSettingsDialog(),
+      );
+      if (!isPermissionGranted) {
+        if (mounted) {
+          context.showSnackbar('Need storage permission to continue');
+        }
+        return;
+      }
+    }
+
     // Router instance to handler requests.
     // Use shelf_router.Router(notFoundHandler: _staticHandler(dir.path))
     // as a fallback for static handler (may use this later)

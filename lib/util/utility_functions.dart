@@ -83,6 +83,37 @@ class UtilityFunctions {
     }
   }
 
+  static Future<bool> checkManageExternalStoragePermission({
+    Function? onGranted,
+    Function? onDenied,
+    Function? onPermanentlyDenied,
+  }) async {
+    final status = await Permission.manageExternalStorage.status;
+    switch (status) {
+      case PermissionStatus.granted:
+        onGranted?.call();
+        return true;
+      case PermissionStatus.permanentlyDenied:
+        onPermanentlyDenied?.call();
+        return false;
+      default:
+        {
+          final requested = await Permission.manageExternalStorage.request();
+          switch (requested) {
+            case PermissionStatus.granted:
+              onGranted?.call();
+              return true;
+            case PermissionStatus.permanentlyDenied:
+              onPermanentlyDenied?.call();
+              return false;
+            default:
+              onDenied?.call();
+              return false;
+          }
+        }
+    }
+  }
+
   static Future<int> get androidSDKVersion async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     final androidInfo = await deviceInfoPlugin.androidInfo;
@@ -95,6 +126,14 @@ class UtilityFunctions {
     }
     final sdkVersion = await androidSDKVersion;
     return 28 >= sdkVersion;
+  }
+
+  static Future<bool> get isNeedAccessAllFileStoragePermission async {
+    if (!Platform.isAndroid) {
+      return false;
+    }
+    final sdkVersion = await androidSDKVersion;
+    return 30 <= sdkVersion;
   }
 
   /// Parse ip (v4) address with [rawInput] which has format:
