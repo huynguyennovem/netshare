@@ -8,17 +8,15 @@ Data sharing in local network
 
 ### Mobile
 
-<img width="300" src="https://user-images.githubusercontent.com/29337364/211847045-dcf96b7d-22e8-45e2-8edb-eb5115c22f46.png"> <img width="300" src="https://user-images.githubusercontent.com/29337364/211847070-06ba416d-f502-44b2-a541-ed51a02083b6.png">
+<img width="300" src="https://github.com/huynguyennovem/netshare/assets/29337364/55749d98-1d96-4c7f-a709-e33b96cb156a"> <img width="300" src="https://github.com/huynguyennovem/netshare/assets/29337364/f8e4ad71-ff86-4734-9709-90ddead3fd2c"> <img width="300" src="https://github.com/huynguyennovem/netshare/assets/29337364/2150f38b-3b91-405e-ba5f-5db8dba9904b">
 
 ### Desktop
 
-Server | Client
--------- | ----------
-<img width="600" src="https://user-images.githubusercontent.com/29337364/211842356-37c40e4a-7647-4754-84f4-738dfab818c8.png"> | <img width="600" src="https://user-images.githubusercontent.com/29337364/211847463-3fbf8bd8-39cf-4af9-81e2-68b644d78910.png">
+<img width="600" src="https://github.com/huynguyennovem/netshare/assets/29337364/2ced719b-4516-451a-94e0-c9264d6b4e39"> <img width="600" src="https://github.com/huynguyennovem/netshare/assets/29337364/e90ae9d7-2475-489d-8845-8f3eb63bd1de"> <img width="600" src="https://github.com/huynguyennovem/netshare/assets/29337364/683c58ee-78b7-4c07-a371-da2eb1f276da">
 
 ### Video
 
-https://user-images.githubusercontent.com/29337364/211870449-dd80c199-e64a-4c21-af46-a1aceea9b61c.mp4
+https://github.com/huynguyennovem/netshare/assets/29337364/2e9caa89-d05a-48f5-ae79-6e69760962ad
 
 ## How to build the project
 _Note: This project is mainly running on the latest Flutter beta channel_
