@@ -307,6 +307,7 @@ class _ClientWidgetState extends State<ClientWidget> {
     } else {
       showModalBottomSheet(
         isScrollControlled: true,
+        showDragHandle: true,
         context: context,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
