@@ -36,6 +36,10 @@ class _FileTileClientState extends State<FileTileClient> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      hoverColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      focusColor: Colors.transparent,
       onTap: () async {
         if(!widget.enableFunctionality) {
           if(widget.onPressed != null) {
