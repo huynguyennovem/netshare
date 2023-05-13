@@ -14,11 +14,15 @@ import 'package:open_filex/open_filex.dart';
 class FileTileClient extends StatefulWidget {
   final SharedFile sharedFile;
   final Function? onRemoveItem;
+  final Function? onPressed;
+  final bool enableFunctionality;
 
   const FileTileClient({
     Key? key,
     required this.sharedFile,
     this.onRemoveItem,
+    this.onPressed,
+    this.enableFunctionality = true,
   }) : super(key: key);
 
   @override
@@ -33,6 +37,12 @@ class _FileTileClientState extends State<FileTileClient> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
+        if(!widget.enableFunctionality) {
+          if(widget.onPressed != null) {
+            widget.onPressed?.call();
+          }
+          return;
+        }
         final file = File('${widget.sharedFile.savedDir}/${widget.sharedFile.name}');
         if(file.existsSync()) {
           OpenFilex.open(file.path);
@@ -66,7 +76,7 @@ class _FileTileClientState extends State<FileTileClient> {
   );
 
   void _showMenuOptions() {
-    if(UtilityFunctions.isDesktop) return;
+    if(UtilityFunctions.isDesktop || !widget.enableFunctionality) return;
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -122,7 +132,7 @@ class _FileTileClientState extends State<FileTileClient> {
   }
 
   _buildOptionMenuButton() {
-    if (UtilityFunctions.isMobile) {
+    if (UtilityFunctions.isMobile || !widget.enableFunctionality) {
       return const SizedBox.shrink();
     }
     return ValueListenableBuilder(
