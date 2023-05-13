@@ -59,11 +59,9 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
     child: Scrollbar(
       controller: mainListScrollController,
       thumbVisibility: false,
-      child: Container(
-        decoration: BoxDecoration(
-          color: seedColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+      child: Material(
+        color: seedColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8.0),
         child: ListView.separated(
           controller: mainListScrollController,
           shrinkWrap: true,
