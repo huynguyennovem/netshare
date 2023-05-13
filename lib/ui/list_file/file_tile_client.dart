@@ -69,6 +69,7 @@ class _FileTileClientState extends State<FileTileClient> {
     if(UtilityFunctions.isDesktop) return;
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (bsContext) {
