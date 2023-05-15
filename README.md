@@ -3,8 +3,11 @@ Data sharing in local network
 
 <img width="772" alt="Screenshot 2023-01-11 at 21 39 25" src="https://user-images.githubusercontent.com/29337364/211834507-cd29722b-53ce-40f0-9ef5-350138406773.png">
 
+[![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/blueaquilae.svg?style=social&label=Follow%20HuyNguyenTw)](https://twitter.com/HuyNguyenTw)
 
-## Demo (Screenshots, Video)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I7LA2DY)
+
+## Demo (Screenshots, Videos)
 
 ### Mobile
 
