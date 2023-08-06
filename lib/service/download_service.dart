@@ -44,6 +44,9 @@ class DownloadService {
     Function(InternalError)? onError,
   }) async {
     String? externalStorageDirPath;
+    // fix https://github.com/huynguyennovem/netshare/issues/67:
+    // file name has space > need to encode the uri
+    String downloadFileUrl = fileUrl;
     if (Platform.isAndroid) {
       try {
         externalStorageDirPath = await AndroidPathProvider.downloadsPath;
@@ -54,6 +57,7 @@ class DownloadService {
       }
     } else if (Platform.isIOS) {
       externalStorageDirPath = (await getApplicationDocumentsDirectory()).absolute.path;
+      downloadFileUrl = Uri.encodeFull(fileUrl);
     }
     if (null != externalStorageDirPath) {
       final savedDir = Directory(externalStorageDirPath);
@@ -61,19 +65,19 @@ class DownloadService {
         await savedDir.create();
       }
       final taskId = await FlutterDownloader.enqueue(
-        url: fileUrl,
+        url: downloadFileUrl,
         savedDir: savedDir.path,
         saveInPublicStorage: true,
       );
       debugPrint('Download taskId: $taskId');
 
       // add to stream
-      final fileName = path.basename(fileUrl);
+      final fileName = path.basename(downloadFileUrl);
       updateDownloadState(
         DownloadEntity(
           taskId ?? fileName,
           fileName,
-          fileUrl,
+          downloadFileUrl,
           savedDir.path,
           DownloadManner.flutterDownloader,
           DownloadState.downloading,
