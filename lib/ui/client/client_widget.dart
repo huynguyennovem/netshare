@@ -75,22 +75,22 @@ class _ClientWidgetState extends State<ClientWidget> {
             String? fileName;
             String? url;
             String? savedDir;
-            if (null != tasks) {
+            if (null != tasks && tasks.isNotEmpty) {
               final task = tasks.firstWhere((element) => taskId == element.taskId);
               fileName = task.filename;
               url = task.url;
               savedDir = task.savedDir;
+              getIt.get<DownloadService>().updateDownloadState(
+                  DownloadEntity(
+                    taskId,
+                    fileName ?? '',
+                    url,
+                    savedDir,
+                    DownloadManner.flutterDownloader,
+                    state,
+                  )
+              );
             }
-            getIt.get<DownloadService>().updateDownloadState(
-                DownloadEntity(
-                  taskId,
-                  fileName ?? '',
-                  url ?? '',
-                  savedDir ?? '',
-                  DownloadManner.flutterDownloader,
-                  state,
-                )
-            );
           }
         });
         FlutterDownloader.registerCallback(downloadCallback);
@@ -151,7 +151,7 @@ class _ClientWidgetState extends State<ClientWidget> {
   @pragma('vm:entry-point')
   static void downloadCallback(
     String id,
-    DownloadTaskStatus status,
+    int status,
     int progress,
   ) {
     debugPrint(
@@ -161,7 +161,7 @@ class _ClientWidgetState extends State<ClientWidget> {
     // TODO: 1. Flutter engine issue: can only send basic dart type + restart/hot reload does not work
     //  (https://github.com/flutter/flutter/issues/119589)
     //  can only send basic dart type -> Fix: convert status entity to int
-    IsolateNameServer.lookupPortByName('downloader_send_port')?.send([id, status.value, progress]);
+    IsolateNameServer.lookupPortByName('downloader_send_port')?.send([id, status, progress]);
   }
 
   @override
