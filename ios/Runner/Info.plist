@@ -60,6 +60,8 @@
     </dict>
     <key>FDMaximumConcurrentTasks</key>
     <integer>5</integer>
+    <key>UISupportsDocumentBrowser</key>
+    <true/>
     <key>LSSupportsOpeningDocumentsInPlace</key>
     <true/>
     <key>UIFileSharingEnabled</key>

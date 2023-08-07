@@ -29,11 +29,11 @@ class FileProvider extends ChangeNotifier {
     required SharedFileState newFileState,
     required String savedDir,
   }) {
-    final oldFile = _files.firstWhere((file) => fileName == file.name);
+    if(_files.isEmpty) return;
+    final oldFile = _files.firstWhere((file) => fileName.trim() == file.name?.trim());
     final oldIndex = _files.indexOf(oldFile);
     final updatedFile = oldFile.copyWith(state: newFileState, savedDir: savedDir);
     _files[oldIndex] = updatedFile;
-
     notifyListeners();
   }
 }
