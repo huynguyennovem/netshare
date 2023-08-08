@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -9,6 +11,7 @@ import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/common_view/empty_widget.dart';
 import 'package:netshare/ui/list_file/file_tile_upload.dart';
+import 'package:netshare/ui/send/file_type_chooser.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:path/path.dart' as path;
@@ -243,15 +246,40 @@ class _SendWidgetState extends State<SendWidget> {
   );
 
   void _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    FileType type = FileType.any;
+    if(Platform.isIOS) {
+      // asking pick file or media
+      showModalBottomSheet(
+        showDragHandle: true,
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        builder: (context) =>
+            FileTypeChooser(
+              onSelectedType: (selectedType) {
+                if (selectedType == 0) {
+                  type = FileType.media;
+                }
+                Navigator.pop(context);
+                _processPickingFile(type);
+              },
+            ),
+      );
+    } else {
+      _processPickingFile(type);
+    }
+  }
+
+  void _processPickingFile(type) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true, type: type);
     if (result != null) {
       setState(() {
         _pickedFiles = _pickedFiles
-          ..addAll(result.paths.where((element) => element != null).map((e) => FileUpload(e!)).toList());
+          ..addAll(result.paths.where((element) => element != null)
+              .map((e) => FileUpload(e!))
+              .toList());
         _pickedFiles = _pickedFiles.toSet().toList(); // remove duplicate files
       });
-    } else {
-      // User canceled the picker
     }
   }
 
