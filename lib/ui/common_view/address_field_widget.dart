@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class AddressFieldWidget extends StatelessWidget {
@@ -25,7 +27,9 @@ class AddressFieldWidget extends StatelessWidget {
           child: TextField(
             enabled: isEnableIP ?? true,
             controller: ipTextController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: Platform.isIOS
+                ? const TextInputType.numberWithOptions(signed: true)
+                : const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
               hintText: '192.168.1.100',
               hintStyle: const TextStyle(color: Colors.black26),
