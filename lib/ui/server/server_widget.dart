@@ -330,7 +330,7 @@ class _ServerWidgetState extends State<ServerWidget> {
       final isOldDirExisted = await _pickedDir.value.exists();
       if(isOldDirExisted) {
         String? result = await FilePicker.platform.getDirectoryPath(
-          initialDirectory: _pickedDir.value.path,
+          initialDirectory: (Platform.isMacOS || Platform.isLinux) ? _pickedDir.value.path : null,
         );
         if (result != null && result.isNotEmpty) {
           _fileDirectoryTextController.text = result;
