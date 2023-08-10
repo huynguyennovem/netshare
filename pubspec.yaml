@@ -36,7 +36,6 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  file_picker: ^5.3.3
   http: ^0.13.5
   equatable: ^2.0.5
   provider: ^6.0.3
@@ -70,6 +69,10 @@ dependencies:
     git:
       url: https://github.com/google/flutter-desktop-embedding.git
       path: plugins/window_size
+  file_picker:
+    git:
+      url: https://github.com/huynguyennovem/flutter_file_picker.git
+      ref: getpathdir-crash-1345
 
 dev_dependencies:
   flutter_test:
