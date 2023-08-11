@@ -183,7 +183,7 @@ class _ClientWidgetState extends State<ClientWidget> {
       return Scaffold(
         appBar: AppBar(
           centerTitle: false,
-          title: Platform.isIOS ? _twoModeSwitcher : const SizedBox.shrink(),
+          title: !Platform.isIOS ? _twoModeSwitcher : const SizedBox.shrink(),
           actions: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
