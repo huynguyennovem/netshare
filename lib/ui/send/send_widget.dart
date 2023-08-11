@@ -11,7 +11,6 @@ import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/provider/file_provider.dart';
 import 'package:netshare/ui/common_view/empty_widget.dart';
 import 'package:netshare/ui/list_file/file_tile_upload.dart';
-import 'package:netshare/ui/send/file_type_chooser.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:path/path.dart' as path;
@@ -248,26 +247,9 @@ class _SendWidgetState extends State<SendWidget> {
   void _pickFile() async {
     FileType type = FileType.any;
     if(Platform.isIOS) {
-      // asking pick file or media
-      showModalBottomSheet(
-        showDragHandle: true,
-        context: context,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-        builder: (context) =>
-            FileTypeChooser(
-              onSelectedType: (selectedType) {
-                if (selectedType == 0) {
-                  type = FileType.media;
-                }
-                Navigator.pop(context);
-                _processPickingFile(type);
-              },
-            ),
-      );
-    } else {
-      _processPickingFile(type);
+      type = FileType.media;
     }
+    _processPickingFile(type);
   }
 
   void _processPickingFile(type) async {
