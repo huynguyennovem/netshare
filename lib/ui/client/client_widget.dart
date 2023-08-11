@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -182,7 +183,8 @@ class _ClientWidgetState extends State<ClientWidget> {
       return Scaffold(
         appBar: AppBar(
           centerTitle: false,
-          title: _twoModeSwitcher,
+          // TODO: blocked by https://github.com/huynguyennovem/netshare/issues/79
+          title: !Platform.isIOS ? _twoModeSwitcher : const SizedBox.shrink(),
           actions: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
