@@ -81,7 +81,7 @@ class _QRMenuPopupState extends State<QRMenuPopup> with SingleTickerProviderStat
                           ]),
                       child: Container(
                         margin: const EdgeInsets.all(8.0),
-                        child: QrImage(
+                        child: QrImageView(
                           data: "${widget.ipAddress}:${widget.port}",
                           version: QrVersions.auto,
                           gapless: false,
