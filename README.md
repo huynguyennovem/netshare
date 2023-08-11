@@ -37,6 +37,13 @@ flutter pub run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
+Normally, desktop app (macOS, Windows, Linux) will be server and mobile app (Android, iOS) will be client role. But roles can be reversed, let's try and enjoy :) 
+
+**Note**
+- Remember to connect both server and client app in the same network
+- iOS:
+To keep iOS app persisting on your device, recommend running it in release mode: `flutter run --release` (you can not reopen app if running it in debug mode)
+
 
 
 
