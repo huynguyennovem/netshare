@@ -4,6 +4,8 @@ import 'package:netshare/entity/download/download_state.dart';
 import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/entity/function_mode.dart';
 import 'package:netshare/entity/internal_error.dart';
+import 'package:netshare/entity/message_role.dart';
+import 'package:netshare/entity/message_state.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/entity/shared_file_state.dart';
 import 'package:netshare/ui/common_view/confirm_dialog.dart';
@@ -12,7 +14,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 extension ContextExt on BuildContext {
-
   void showSnackbar(String message, {Duration? duration}) {
     ScaffoldMessenger.of(this).showSnackBar(SnackBar(
       duration: duration ?? const Duration(seconds: 1),
@@ -43,9 +44,9 @@ extension ContextExt on BuildContext {
           header: Text(
             'Switching to ${newMode.name}',
             style: Theme.of(ct).textTheme.headlineMedium?.copyWith(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-            ),
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
             textAlign: TextAlign.center,
           ),
           body: const Text(
@@ -70,9 +71,9 @@ extension ContextExt on BuildContext {
           header: Text(
             'Open Settings',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-            ),
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
             textAlign: TextAlign.center,
           ),
           body: const Text(
@@ -84,12 +85,11 @@ extension ContextExt on BuildContext {
       },
     );
   }
-
 }
 
 extension SharedFileExt on SharedFile {
   IconData get fileIcon {
-    if(null == name) {
+    if (null == name) {
       return Icons.question_mark;
     }
     String ext;
@@ -98,11 +98,13 @@ extension SharedFileExt on SharedFile {
     } catch (e) {
       ext = '';
     }
-    if(ext.isEmpty) return Icons.question_mark;
+    if (ext.isEmpty) return Icons.question_mark;
     final extension = p.extension(name!).substring(1).trim().toLowerCase();
-    switch(extension) {
-      case mTxt:  return Icons.text_fields;
-      case mPdf:  return Icons.picture_as_pdf_outlined;
+    switch (extension) {
+      case mTxt:
+        return Icons.text_fields;
+      case mPdf:
+        return Icons.picture_as_pdf_outlined;
       case mMp4:
       case mAvi:
       case mMov:
@@ -116,7 +118,7 @@ extension SharedFileExt on SharedFile {
       case mJpeg:
       case mBmp:
       case mWebp:
-      return Icons.image_outlined;
+        return Icons.image_outlined;
       case mGif:
         return Icons.gif;
       case mDoc:
@@ -145,21 +147,26 @@ extension SharedFileExt on SharedFile {
 
 extension IntExt on int {
   DownloadState get toDownloadState {
-    switch(this) {
-      case 2: return DownloadState.downloading;
-      case 3: return DownloadState.succeed;
-      case 4: return DownloadState.failed;
+    switch (this) {
+      case 2:
+        return DownloadState.downloading;
+      case 3:
+        return DownloadState.succeed;
+      case 4:
+        return DownloadState.failed;
       default:
-      return DownloadState.none;
+        return DownloadState.none;
     }
   }
 }
 
 extension DownloadStateExt on DownloadState {
   SharedFileState get toSharedFileState {
-    switch(this) {
-      case DownloadState.downloading: return SharedFileState.downloading;
-      case DownloadState.succeed: return SharedFileState.available;
+    switch (this) {
+      case DownloadState.downloading:
+        return SharedFileState.downloading;
+      case DownloadState.succeed:
+        return SharedFileState.available;
       default:
         return SharedFileState.none;
     }
@@ -173,5 +180,55 @@ extension TimeFormat on Duration {
 extension XFileExtension on XFile {
   FileUpload get toFileUpload {
     return FileUpload(path);
+  }
+}
+
+extension MessageStateExtension on MessageState {
+  static const valueMap = {
+    MessageState.sending: "sending",
+    MessageState.sent: "sent",
+    MessageState.error: "error",
+  };
+
+  String? get value => valueMap[this];
+
+  static MessageState fromString(String input) {
+    final valueMapEntries =
+        valueMap.map<String, MessageState>((key, value) => MapEntry(value, key));
+    MessageState? output = valueMapEntries[input];
+    if (output == null) {
+      throw 'Invalid Input';
+    }
+    return output;
+  }
+}
+
+extension MessageRoleExtension on MessageRole {
+  static const valueMap = {
+    MessageRole.client: "client",
+    MessageRole.server: "server",
+  };
+
+  String? get value => valueMap[this];
+
+  static MessageRole fromString(String input) {
+    final valueMapEntries =
+        valueMap.map<String, MessageRole>((key, value) => MapEntry(value, key));
+    MessageRole? output = valueMapEntries[input];
+    if (output == null) {
+      throw 'Invalid Input';
+    }
+    return output;
+  }
+}
+
+extension FunctionModeExtension on FunctionMode {
+  MessageRole toMessageRole() {
+    switch(this) {
+      case FunctionMode.server:
+        return MessageRole.server;
+      default:
+        return MessageRole.client;
+    }
   }
 }

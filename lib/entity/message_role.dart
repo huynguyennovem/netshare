@@ -1,0 +1,4 @@
+enum MessageRole {
+  client,
+  server,
+}

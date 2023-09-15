@@ -9,23 +9,33 @@ import 'package:go_router/go_router.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
+import 'package:netshare/data/global_scope_data.dart';
 import 'package:netshare/data/pref_data.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/function_mode.dart';
+import 'package:netshare/entity/message.dart';
+import 'package:netshare/entity/message_state.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
+import 'package:netshare/provider/app_provider.dart';
+import 'package:netshare/provider/chat_provider.dart';
+import 'package:netshare/service/message_manage_service.dart';
 import 'package:netshare/ui/common_view/address_field_widget.dart';
 import 'package:netshare/ui/common_view/two_modes_switcher.dart';
+import 'package:netshare/ui/server/message_bubble.dart';
 import 'package:netshare/ui/server/qr_popup.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:mime/mime.dart';
 import 'package:open_dir/open_dir.dart';
 import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
 import 'package:shelf_static/shelf_static.dart' as shelf_static;
 import 'package:stop_watch_timer/stop_watch_timer.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart' as ws;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ServerWidget extends StatefulWidget {
   const ServerWidget({Key? key}) : super(key: key);
@@ -66,8 +76,8 @@ class _ServerWidgetState extends State<ServerWidget> {
         _portTextController.text = addresses[1];
       } else {
         // get current IP if there is no saved address
-        final deviceIP = await UtilityFunctions.getIPAddress();
-        if (deviceIP != null && deviceIP.isNotEmpty) {
+        final deviceIP = getIt.get<GlobalScopeData>().currentDeviceIPAddress;
+        if (deviceIP.isNotEmpty) {
           _ipTextController.text = deviceIP;
         }
       }
@@ -75,6 +85,10 @@ class _ServerWidgetState extends State<ServerWidget> {
       if (lastSavedDir != null && lastSavedDir.isNotEmpty) {
         _fileDirectoryTextController.text = lastSavedDir;
         _pickedDir.value = Directory(lastSavedDir);
+      }
+
+      if (mounted) {
+        context.read<AppProvider>().updateAppMode(appMode: FunctionMode.server);
       }
     });
 
@@ -190,9 +204,10 @@ class _ServerWidgetState extends State<ServerWidget> {
               },
             ),
             const SizedBox(width: 8.0),
-            const Icon(Icons.circle, size: 12.0, color: Colors.red),
+            const Icon(Icons.circle, size: 12.0, color: Colors.green),
             const SizedBox(width: 16.0),
             QRMenuPopup(ipAddress: _ipTextController.text, port: _portTextController.text),
+            MessageBubble(isServerStarted: _isHostingNotifier.value),
           ],
         ) : const SizedBox.shrink();
       },
@@ -390,6 +405,7 @@ class _ServerWidgetState extends State<ServerWidget> {
     // as a fallback for static handler (may use this later)
     final routerHandler = shelf_router.Router()
       ..get('/files', (request) => _getFilesHandler(request, address))
+      ..get('/message', (request) => handleWs(request))
       ..post('/upload', (request) => _uploadFileHandler(request, address));
 
     // static handler always in the first order in list handlers
@@ -412,18 +428,13 @@ class _ServerWidgetState extends State<ServerWidget> {
       });
 
       getIt.get<PrefData>().saveLastHostedAddress(address);
+      getIt.get<GlobalScopeData>().updateCurrentServerHostingPort(newPort: port.toString());
       _exposeLogger(message: 'Start server at http://${_serverNotifier.value?.address.host}:${_serverNotifier.value?.port}');
 
     } catch (e) {
       debugPrint(e.toString());
       _stopHosting(isForce: false);
     }
-  }
-
-  void _stopHosting({required isForce}) {
-    _exposeLogger(message: 'Stop server...');
-    _isHostingNotifier.value = !_isHostingNotifier.value;
-    _serverNotifier.value?.close(force: isForce);
   }
 
   Future<Response> _getFilesHandler(Request request, String address) async {
@@ -444,6 +455,46 @@ class _ServerWidgetState extends State<ServerWidget> {
       headers: {'content-type': 'application/json'},
       body: json.encode(listJson),
     );
+  }
+
+  FutureOr<Response> handleWs(Request request) {
+    // Get incoming client address (including itself when open Chat page)
+    // normally:
+    // The 1st time: Server address itself
+    // The 2nd time: Client address
+    // final clientAddress = (request.context['shelf.io.connection_info'] as HttpConnectionInfo?)?.remoteAddress.address;
+    // final serverAddress = getIt.get<GlobalScopeData>().currentDeviceIPAddress;
+
+    final channels = <WebSocketChannel>[];
+    return ws.webSocketHandler((WebSocketChannel channel) {
+      channels.add(channel);
+      channel.stream.listen((message) {
+        try {
+          final receivedMessage = Message.fromJson(json.decode(message));
+          final updatedMessage = receivedMessage.copyWith(messageState: MessageState.sent);
+
+          // Client | Server: response to listener
+          final response = json.encode(updatedMessage.toJson());
+          // channel.sink.add(response);
+          for (final c in channels) {
+            c.sink.add(response);
+          }
+
+          // Server: add SENT message to stream and provider
+          // Need this since Server is a standalone instance, not go with Client instance;
+          // when Client sends a message, Server also needs to add that message to its own stream instance
+          getIt.get<MessageManagerService>().addMessage(updatedMessage);
+          context.read<ChatProvider>().addMessage(message: updatedMessage);
+
+          // TODO: sending message from server -> client. Client can receive message
+          // send to all connected devices/clients (right socket)
+          // currently, just send it server itself: 192.168.1.5 -> 192.168.1.5 (wrong)
+        } catch (e) {
+          debugPrint('Error while handling incoming message in socket: ${e.toString()}');
+        }
+      }, onDone: () => channels.remove(channel)
+      );
+    })(request);
   }
 
   Future<Response> _uploadFileHandler(Request request, String address) async {
@@ -490,8 +541,14 @@ class _ServerWidgetState extends State<ServerWidget> {
     }
   }
 
+  void _stopHosting({required isForce}) {
+    _exposeLogger(message: 'Stop server...');
+    _isHostingNotifier.value = !_isHostingNotifier.value;
+    _serverNotifier.value?.close(force: isForce);
+  }
+
   _exposeLogger({required String message}) {
-    debugPrint(message);
+    debugPrint('[ServerWidget] $message');
     _logBuffer.appendLog(message: message);
   }
 

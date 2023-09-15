@@ -5,6 +5,7 @@ import 'package:netshare/service/download_service.dart';
 import 'package:netshare/data/global_scope_data.dart';
 import 'package:netshare/data/hivedb/clients/shared_file_client.dart';
 import 'package:netshare/data/pref_data.dart';
+import 'package:netshare/service/message_manage_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -13,6 +14,7 @@ void setupDI() {
   getIt.registerSingleton<ApiService>(ApiService());
   getIt.registerSingleton<PrefData>(PrefData());
   getIt.registerSingleton<DownloadService>(DownloadService());
+  getIt.registerSingleton<MessageManagerService>(MessageManagerService());
 
   // hive clients
   getIt.registerSingleton<SharedFileClient>(SharedFileClient());

@@ -40,6 +40,25 @@ class _NavigationWidgetsState extends State<NavigationWidgets> {
               ),
             );
           }),
+          Builder(builder: (context) {
+            final isConnected = widget.connectionStatus == ConnectionStatus.connected;
+            return FloatingActionButton.extended(
+              backgroundColor: isConnected
+                ? Theme.of(context).colorScheme.primaryContainer
+                : disabledButtonColor,
+              heroTag: const Text('Share text'),
+              onPressed: () => _onClickShareText(),
+              icon: Icon(Icons.chat_bubble,
+                  color: isConnected ? textIconButtonColor : textIconButtonColorActivated
+              ),
+              label: Text(
+                'Share text',
+                style: CommonTextStyle.textStyleNormal.copyWith(
+                    color: isConnected ? textIconButtonColor : textIconButtonColorActivated,
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -48,6 +67,11 @@ class _NavigationWidgetsState extends State<NavigationWidgets> {
   void _onClickSend() {
     if(widget.connectionStatus != ConnectionStatus.connected) return;
     context.pushNamed(mSendPath);
+  }
+
+  void _onClickShareText() {
+    if(widget.connectionStatus != ConnectionStatus.connected) return;
+    context.pushNamed(mChatPath);
   }
 
 }
