@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:netshare/config/styles.dart';
+import 'package:netshare/data/global_scope_data.dart';
 import 'package:netshare/data/pref_data.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/connection_status.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/ui/common_view/address_field_widget.dart';
 import 'package:netshare/util/extension.dart';
-import 'package:netshare/util/utility_functions.dart';
 import 'package:provider/provider.dart';
 
 
@@ -41,9 +41,9 @@ class _ConnectWidgetState extends State<ConnectWidget> {
         return;
       }
       // get current IP if there is no saved address
-      final deviceIP = await UtilityFunctions.getIPAddress();
-      if (deviceIP != null && deviceIP.isNotEmpty) {
-        _ipTextController.text = deviceIP.substring(0, 8);
+      final deviceIP = getIt.get<GlobalScopeData>().currentDeviceIPAddress;
+      if (deviceIP.isNotEmpty) {
+        _ipTextController.text = deviceIP.substring(0, 8);  // remove last ip block, for eg: 192.168.1.
       }
     });
   }
@@ -130,7 +130,7 @@ class _ConnectWidgetState extends State<ConnectWidget> {
   }
 
   _onClickConnect({required String ipAddress, required int port}) {
-    debugPrint('Connecting to $ipAddress:$port');
+    debugPrint('[ConnectWidget] Connecting to $ipAddress:$port');
 
     // dismissing keyboard while connecting
     FocusScope.of(context).unfocus();
@@ -145,10 +145,10 @@ class _ConnectWidgetState extends State<ConnectWidget> {
         throw error;
       });
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('[ConnectWidget] ${e.toString()}');
     }
     _connectedIPSubscription = _connectedIPFuture?.asStream().listen((socket) {
-      debugPrint('Connected to $ipAddress:$port');
+      debugPrint('[ConnectWidget] Connected to $ipAddress:$port');
       if (mounted) {
         context
             .read<ConnectionProvider>()

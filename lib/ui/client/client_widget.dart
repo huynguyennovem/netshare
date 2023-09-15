@@ -7,6 +7,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:go_router/go_router.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/config/styles.dart';
+import 'package:netshare/provider/app_provider.dart';
 import 'package:netshare/repository/file_repository.dart';
 import 'package:netshare/service/download_service.dart';
 import 'package:netshare/data/hivedb/clients/shared_file_client.dart';
@@ -18,6 +19,7 @@ import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/ui/client/connect_widget.dart';
 import 'package:netshare/ui/client/navigation_widget.dart';
+import 'package:netshare/ui/common_view/connection_status_info.dart';
 import 'package:netshare/ui/common_view/two_modes_switcher.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +52,7 @@ class _ClientWidgetState extends State<ClientWidget> {
       final files = (await fileRepository.getSharedFilesWithState()).getOrElse(() => {});
       if (mounted) {
         context.read<FileProvider>().addAllSharedFiles(sharedFiles: files);
+        context.read<AppProvider>().updateAppMode(appMode: FunctionMode.client);
       }
     });
     _initDownloadModule();
@@ -185,19 +188,9 @@ class _ClientWidgetState extends State<ClientWidget> {
           centerTitle: false,
           title: !Platform.isIOS ? _twoModeSwitcher : const SizedBox.shrink(),
           actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                isConnected
-                    ? const Icon(Icons.circle, size: 12.0, color: Colors.green)
-                    : const Icon(Icons.circle, size: 12.0, color: Colors.grey),
-                const SizedBox(width: 6.0),
-                Text(
-                  connectedIPAddress,
-                  style: CommonTextStyle.textStyleNormal.copyWith(color: textIconButtonColor),
-                ),
-              ],
+            ConnectionStatusInfo(
+              isConnected: isConnected,
+              connectedIPAddress: connectedIPAddress,
             ),
             isConnected
                 ? IconButton(
