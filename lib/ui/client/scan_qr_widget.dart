@@ -57,7 +57,6 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
           'Scan to connect',
           style: CommonTextStyle.textStyleAppbar,
         ),
-        iconTheme: const IconThemeData(color: textIconButtonColor),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

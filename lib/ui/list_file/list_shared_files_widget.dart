@@ -36,7 +36,7 @@ class _ListSharedFilesState extends State<ListSharedFiles> {
     return Consumer<FileProvider>(
       builder: (context, value, child) {
         final files = value.files;
-        debugPrint('Fetched files: ${files.length}');
+        debugPrint('[ListSharedFiles] Fetched files: ${files.length}');
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: Column(

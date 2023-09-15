@@ -39,12 +39,12 @@ class _SendWidgetState extends State<SendWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 4.0,
         title: Text(
           'Send',
           style: CommonTextStyle.textStyleNormal.copyWith(fontSize: 20.0),
         ),
         centerTitle: false,
-        iconTheme: const IconThemeData(color: textIconButtonColor),
       ),
       body: _buildBody(),
     );
