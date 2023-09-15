@@ -29,14 +29,28 @@ class _QRMenuPopupState extends State<QRMenuPopup> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      key: _buttonKey,
-      onPressed: () => _onClickQRCode(),
-      color: Theme.of(context).colorScheme.primaryContainer,
-      shape: const CircleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Icon(Icons.qr_code, color: Theme.of(context).colorScheme.primary),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+      decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).colorScheme.primaryContainer,
+          boxShadow: const [
+            BoxShadow(
+              blurStyle: BlurStyle.outer,
+              blurRadius: 8.0,
+              color: Colors.black26,
+            ),
+          ]
+      ),
+      child: IconButton(
+        key: _buttonKey,
+        onPressed: () => _onClickQRCode(),
+        padding: EdgeInsets.zero,
+        iconSize: 24.0,
+        icon: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Icon(Icons.qr_code, color: Theme.of(context).colorScheme.primary),
+        ),
       ),
     );
   }

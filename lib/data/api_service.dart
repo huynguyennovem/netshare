@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -10,8 +11,7 @@ import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 
 class ApiService {
-
-  String domain = 'http://${getIt.get<GlobalScopeData>().connectedIPAddress}';
+  String domain = 'http://${getIt.get<GlobalScopeData>().connectedIPAddress}';  // http://ip:port
 
   void refreshDomain() {
     domain = 'http://${getIt.get<GlobalScopeData>().connectedIPAddress}';
