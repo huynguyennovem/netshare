@@ -64,7 +64,7 @@ dependencies:
   open_dir: ^0.0.1+4
   qr_flutter: ^4.0.0
   qr_code_scanner: ^1.0.1
-  desktop_drop: ^0.4.1
+  desktop_drop: ^0.4.4
   window_size:
     git:
       url: https://github.com/google/flutter-desktop-embedding.git
