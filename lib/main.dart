@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:netshare/ui/common_view/confirm_dialog.dart';
 import 'package:provider/provider.dart';
-
 import 'package:netshare/config/styles.dart';
 import 'package:netshare/data/preload_data.dart';
 import 'package:netshare/di/di.dart';
+import 'package:netshare/entity/file_upload.dart';
 import 'package:netshare/plugin_management/plugins.dart';
 import 'package:netshare/provider/app_provider.dart';
 import 'package:netshare/provider/chat_provider.dart';
 import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/provider/file_provider.dart';
-import 'package:netshare/ui/chat/chat_widget.dart';
+import 'package:netshare/ui/send/send_text_widget.dart';
 import 'package:netshare/ui/client/scan_qr_widget.dart';
 import 'package:netshare/ui/client/client_widget.dart';
-import 'package:netshare/ui/send/send_widget.dart';
+import 'package:netshare/ui/send/send_file_widget.dart';
 import 'package:netshare/ui/server/server_widget.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/ui/send/uploading_widget.dart';
-
-import 'data/preload_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +39,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   final GoRouter _router = GoRouter(
     navigatorKey: _navigatorKey,
     errorBuilder: (BuildContext context, GoRouterState state) =>
@@ -67,30 +63,37 @@ class _MyAppState extends State<MyApp> {
         name: mClientPath,
         path: '/$mClientPath',
         builder: (context, state) => const ClientWidget(),
-          routes: [
-            GoRoute(
-              name: mSendPath,
-              path: mSendPath,
-              builder: (BuildContext context, GoRouterState state) => const SendWidget(),
-              routes: [
-                GoRoute(
-                  name: mUploadingPath,
-                  path: mUploadingPath,
-                  builder: (context, state) => const UploadingWidget(),
-                )
-              ],
-            ),
-            GoRoute(
-              name: mChatPath,
-              path: mChatPath,
-              builder: (BuildContext context, GoRouterState state) => const ChatWidget(),
-            ),
-            GoRoute(
-              name: mScanningPath,
-              path: mScanningPath,
-              builder: (BuildContext context, GoRouterState state) => const ScanQRWidget(),
-            ),
-          ],
+        routes: [
+          GoRoute(
+            name: mSendFilesPath,
+            path: mSendFilesPath,
+            builder: (BuildContext context, GoRouterState state) {
+              final fileUpload = state.extra as FileUpload?;
+              return SendFilesWidget(
+                initialFiles: fileUpload != null ? [fileUpload] : null,
+              );
+            },
+            routes: [
+              GoRoute(
+                name: mUploadingPath,
+                path: mUploadingPath,
+                builder: (context, state) => const UploadingWidget(),
+              )
+            ],
+          ),
+          GoRoute(
+            name: mSendTextPath,
+            path: mSendTextPath,
+            builder: (BuildContext context, GoRouterState state) =>
+                const SendTextWidget(),
+          ),
+          GoRoute(
+            name: mScanningPath,
+            path: mScanningPath,
+            builder: (BuildContext context, GoRouterState state) =>
+                const ScanQRWidget(),
+          ),
+        ],
       ),
     ],
   );
@@ -111,10 +114,11 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           useMaterial3: true,
           appBarTheme: const AppBarTheme(color: backgroundColor),
-          colorScheme: ColorScheme.fromSeed(seedColor: seedColor, background: backgroundColor),
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: seedColor, background: backgroundColor),
           iconButtonTheme: const IconButtonThemeData(
             style: ButtonStyle(
-              iconColor: MaterialStatePropertyAll<Color>(textIconButtonColor),
+              iconColor: WidgetStatePropertyAll<Color>(textIconButtonColor),
             ),
           ),
         ),

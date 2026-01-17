@@ -13,20 +13,16 @@ import 'package:netshare/data/global_scope_data.dart';
 import 'package:netshare/data/pref_data.dart';
 import 'package:netshare/di/di.dart';
 import 'package:netshare/entity/function_mode.dart';
-import 'package:netshare/entity/message.dart';
-import 'package:netshare/entity/message_state.dart';
 import 'package:netshare/entity/shared_file_entity.dart';
 import 'package:netshare/provider/app_provider.dart';
-import 'package:netshare/provider/chat_provider.dart';
-import 'package:netshare/service/message_manage_service.dart';
 import 'package:netshare/ui/common_view/address_field_widget.dart';
 import 'package:netshare/ui/common_view/two_modes_switcher.dart';
-import 'package:netshare/ui/server/message_bubble.dart';
 import 'package:netshare/ui/server/qr_popup.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:mime/mime.dart';
 import 'package:open_dir/open_dir.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:shelf/shelf.dart';
@@ -34,8 +30,6 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
 import 'package:shelf_static/shelf_static.dart' as shelf_static;
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-import 'package:shelf_web_socket/shelf_web_socket.dart' as ws;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ServerWidget extends StatefulWidget {
   const ServerWidget({Key? key}) : super(key: key);
@@ -61,7 +55,8 @@ class _ServerWidgetState extends State<ServerWidget> {
   final ValueNotifier<String> _watchTimerValue = ValueNotifier('');
 
   late TwoModeSwitcher _twoModeSwitcher;
-  final GlobalKey<TwoModeSwitcherState> _twoModeSwitcherKey = GlobalKey<TwoModeSwitcherState>();
+  final GlobalKey<TwoModeSwitcherState> _twoModeSwitcherKey =
+      GlobalKey<TwoModeSwitcherState>();
 
   @override
   void initState() {
@@ -107,7 +102,7 @@ class _ServerWidgetState extends State<ServerWidget> {
       _watchTimerValue.value = Duration(seconds: secs).formatTime();
     });
     _isHostingNotifier.addListener(() async {
-      if(_isHostingNotifier.value) {
+      if (_isHostingNotifier.value) {
         _stopWatchTimer.onStartTimer();
       } else {
         _stopWatchTimer.onResetTimer();
@@ -121,8 +116,8 @@ class _ServerWidgetState extends State<ServerWidget> {
       onValueChanged: (mode) => context.switchingModes(
         newMode: mode == true ? FunctionMode.server : FunctionMode.client,
         confirmCallback: (isUserAgreed) {
-          if(isUserAgreed) {
-            if(_isHostingNotifier.value) {
+          if (isUserAgreed) {
+            if (_isHostingNotifier.value) {
               _stopHosting(isForce: true);
             }
             // force using goNamed instead of pushName, due to:
@@ -149,16 +144,15 @@ class _ServerWidgetState extends State<ServerWidget> {
       appBar: AppBar(
         centerTitle: false,
         title: _twoModeSwitcher,
-        actions: [
-          _buildAppBarActions()
-        ],
+        actions: [_buildAppBarActions()],
       ),
       body: Container(
         alignment: Alignment.center,
         margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
         child: ValueListenableBuilder(
             valueListenable: _isHostingNotifier,
-            builder: (BuildContext context, bool isServerStarted, Widget? child) {
+            builder:
+                (BuildContext context, bool isServerStarted, Widget? child) {
               return Column(
                 children: [
                   const SizedBox(height: 8.0),
@@ -186,48 +180,54 @@ class _ServerWidgetState extends State<ServerWidget> {
   }
 
   _buildAppBarActions() => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-    child: ValueListenableBuilder(
-      valueListenable: _isHostingNotifier,
-      builder: (BuildContext context, bool value, Widget? child) {
-        return value ? Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ValueListenableBuilder(
-              valueListenable: _watchTimerValue,
-              builder: (BuildContext context, String value, Widget? child) {
-                return Text(
-                  value.isEmpty ? '00:00:00' : value,
-                  style: CommonTextStyle.textStyleNormal,
-                );
-              },
-            ),
-            const SizedBox(width: 8.0),
-            const Icon(Icons.circle, size: 12.0, color: Colors.green),
-            const SizedBox(width: 16.0),
-            QRMenuPopup(ipAddress: _ipTextController.text, port: _portTextController.text),
-            MessageBubble(isServerStarted: _isHostingNotifier.value),
-          ],
-        ) : const SizedBox.shrink();
-      },
-    ),
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: ValueListenableBuilder(
+          valueListenable: _isHostingNotifier,
+          builder: (BuildContext context, bool value, Widget? child) {
+            return value
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ValueListenableBuilder(
+                        valueListenable: _watchTimerValue,
+                        builder: (BuildContext context, String value,
+                            Widget? child) {
+                          return Text(
+                            value.isEmpty ? '00:00:00' : value,
+                            style: CommonTextStyle.textStyleNormal,
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8.0),
+                      const Icon(Icons.circle, size: 12.0, color: Colors.green),
+                      const SizedBox(width: 16.0),
+                      QRMenuPopup(
+                          ipAddress: _ipTextController.text,
+                          port: _portTextController.text),
+                    ],
+                  )
+                : const SizedBox.shrink();
+          },
+        ),
+      );
 
   _buildIPPortRow(isServerStarted) => Row(
-    children: [
-      Expanded(
-        child: AddressFieldWidget(
-          ipTextController: _ipTextController,
-          portTextController: _portTextController,
-          isEnableIP: !isServerStarted,
-          isEnablePort: !isServerStarted,
-          backgroundColor: textFieldBackgroundColor,
-        ),
-      ),
-      UtilityFunctions.isDesktop ? const SizedBox(width: 80.0) : const SizedBox(width: 8.0),
-    ],
-  );
+        children: [
+          Expanded(
+            child: AddressFieldWidget(
+              ipTextController: _ipTextController,
+              portTextController: _portTextController,
+              isEnableIP: !isServerStarted,
+              isEnablePort: !isServerStarted,
+              backgroundColor: textFieldBackgroundColor,
+            ),
+          ),
+          UtilityFunctions.isDesktop
+              ? const SizedBox(width: 80.0)
+              : const SizedBox(width: 8.0),
+        ],
+      );
 
   _buildDirPickerRow(isServerStarted) => IntrinsicHeight(
         child: Row(
@@ -241,11 +241,13 @@ class _ServerWidgetState extends State<ServerWidget> {
                   hintText: 'Pick the sharing path here',
                   hintStyle: const TextStyle(color: Colors.black26),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                    borderSide: BorderSide(
+                        color: Colors.black12.withOpacity(0.2), width: 1.2),
                     borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                   ),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black12.withOpacity(0.2), width: 1.2),
+                    borderSide: BorderSide(
+                        color: Colors.black12.withOpacity(0.2), width: 1.2),
                     borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                   ),
                   filled: true,
@@ -265,7 +267,8 @@ class _ServerWidgetState extends State<ServerWidget> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                onPressed: () => !isServerStarted ? _onClickSelectDirPath() : null,
+                onPressed: () =>
+                    !isServerStarted ? _onClickSelectDirPath() : null,
                 child: const SizedBox(
                   child: Icon(
                     Icons.drive_folder_upload,
@@ -280,11 +283,15 @@ class _ServerWidgetState extends State<ServerWidget> {
                     width: 72,
                     child: MaterialButton(
                       height: double.infinity,
-                      color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withOpacity(0.8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      onPressed: () => _openNativeDirectory(_fileDirectoryTextController.text),
+                      onPressed: () => _openNativeDirectory(
+                          _fileDirectoryTextController.text),
                       child: const SizedBox(
                         child: Icon(
                           Icons.open_in_new,
@@ -306,13 +313,18 @@ class _ServerWidgetState extends State<ServerWidget> {
           ipAddress: _ipTextController.text,
           port: int.parse(_portTextController.text),
         ),
-        icon: Icon(Icons.wifi_tethering,
-            color: isServerStarted ? textIconButtonColorActivated : textIconButtonColor,
+        icon: Icon(
+          Icons.wifi_tethering,
+          color: isServerStarted
+              ? textIconButtonColorActivated
+              : textIconButtonColor,
         ),
         label: Text(
           isServerStarted ? 'Stop hosting' : 'Start hosting',
           style: CommonTextStyle.textStyleNormal.copyWith(
-            color: isServerStarted ? textIconButtonColorActivated : textIconButtonColor,
+            color: isServerStarted
+                ? textIconButtonColorActivated
+                : textIconButtonColor,
           ),
         ),
       );
@@ -343,9 +355,11 @@ class _ServerWidgetState extends State<ServerWidget> {
   _onClickSelectDirPath() async {
     try {
       final isOldDirExisted = await _pickedDir.value.exists();
-      if(isOldDirExisted) {
+      if (isOldDirExisted) {
         String? result = await FilePicker.platform.getDirectoryPath(
-          initialDirectory: (Platform.isMacOS || Platform.isLinux) ? _pickedDir.value.path : null,
+          initialDirectory: (Platform.isMacOS || Platform.isLinux)
+              ? _pickedDir.value.path
+              : null,
         );
         if (result != null && result.isNotEmpty) {
           _fileDirectoryTextController.text = result;
@@ -375,21 +389,24 @@ class _ServerWidgetState extends State<ServerWidget> {
 
   _staticHandler(String pathDir) => shelf_static.createStaticHandler(pathDir);
 
-  Response _undefinedHandler(Request request) => Response.notFound('Request is not found!');
+  Response _undefinedHandler(Request request) =>
+      Response.notFound('Request is not found!');
 
   void _startHosting(ipAddress, port) async {
     final address = '$ipAddress:$port';
     final dir = Directory(_fileDirectoryTextController.text);
-    if(!dir.existsSync()) {
+    if (!dir.existsSync()) {
       context.showSnackbar('Sharing path does not exist. Try again!');
       return;
     }
 
     // Additional check for Android limitation (Android 11 and above,
     // see: https://developer.android.com/training/data-storage/manage-all-files#all-files-access-google-play)
-    final needGrantPermission = await UtilityFunctions.isNeedAccessAllFileStoragePermission;
-    if(needGrantPermission) {
-      final isPermissionGranted = await UtilityFunctions.checkManageExternalStoragePermission(
+    final needGrantPermission =
+        await UtilityFunctions.isNeedAccessAllFileStoragePermission;
+    if (needGrantPermission) {
+      final isPermissionGranted =
+          await UtilityFunctions.checkManageExternalStoragePermission(
         onPermanentlyDenied: () => context.showOpenSettingsDialog(),
       );
       if (!isPermissionGranted) {
@@ -405,22 +422,24 @@ class _ServerWidgetState extends State<ServerWidget> {
     // as a fallback for static handler (may use this later)
     final routerHandler = shelf_router.Router()
       ..get('/files', (request) => _getFilesHandler(request, address))
-      ..get('/message', (request) => handleWs(request))
+      // ..get('/message', (request) => handleWs(request))
       ..post('/upload', (request) => _uploadFileHandler(request, address));
 
     // static handler always in the first order in list handlers
     Cascade cascade = Cascade()
-          .add(_staticHandler(dir.path))
-          .add(routerHandler)
-          .add(_undefinedHandler);
+        .add(_staticHandler(dir.path))
+        .add(routerHandler)
+        .add(_undefinedHandler);
     var handler = const Pipeline()
-        .addMiddleware(logRequests(logger: (message, isError) => _exposeLogger(message: message)))
+        .addMiddleware(logRequests(
+            logger: (message, isError) => _exposeLogger(message: message)))
         .addHandler(cascade.handler);
 
     _isHostingNotifier.value = !_isHostingNotifier.value;
 
     try {
-      _serverNotifier.value = await shelf_io.serve(handler, ipAddress, port).catchError((error) {
+      _serverNotifier.value =
+          await shelf_io.serve(handler, ipAddress, port).catchError((error) {
         if (mounted) {
           context.showSnackbar('Failed to host a server! Try again later!');
         }
@@ -428,9 +447,12 @@ class _ServerWidgetState extends State<ServerWidget> {
       });
 
       getIt.get<PrefData>().saveLastHostedAddress(address);
-      getIt.get<GlobalScopeData>().updateCurrentServerHostingPort(newPort: port.toString());
-      _exposeLogger(message: 'Start server at http://${_serverNotifier.value?.address.host}:${_serverNotifier.value?.port}');
-
+      getIt
+          .get<GlobalScopeData>()
+          .updateCurrentServerHostingPort(newPort: port.toString());
+      _exposeLogger(
+          message:
+              'Start server at http://${_serverNotifier.value?.address.host}:${_serverNotifier.value?.port}');
     } catch (e) {
       debugPrint(e.toString());
       _stopHosting(isForce: false);
@@ -448,7 +470,8 @@ class _ServerWidgetState extends State<ServerWidget> {
 
     final listJson = files.map((f) {
       final fileName = path.basename(f.path);
-      return SharedFile(name: fileName, url: 'http://$address/$fileName').toJson();
+      return SharedFile(name: fileName, url: 'http://$address/$fileName')
+          .toJson();
     }).toList();
     return Response(
       HttpStatus.ok,
@@ -457,49 +480,54 @@ class _ServerWidgetState extends State<ServerWidget> {
     );
   }
 
-  FutureOr<Response> handleWs(Request request) {
-    // Get incoming client address (including itself when open Chat page)
-    // normally:
-    // The 1st time: Server address itself
-    // The 2nd time: Client address
-    // final clientAddress = (request.context['shelf.io.connection_info'] as HttpConnectionInfo?)?.remoteAddress.address;
-    // final serverAddress = getIt.get<GlobalScopeData>().currentDeviceIPAddress;
+// TODO: remove this when cleanup project
+//This is no longer needed chat, compress to file instead.
 
-    final channels = <WebSocketChannel>[];
-    return ws.webSocketHandler((WebSocketChannel channel) {
-      channels.add(channel);
-      channel.stream.listen((message) {
-        try {
-          final receivedMessage = Message.fromJson(json.decode(message));
-          final updatedMessage = receivedMessage.copyWith(messageState: MessageState.sent);
+  // FutureOr<Response> handleWs(Request request) {
+  //   // Get incoming client address (including itself when open Chat page)
+  //   // normally:
+  //   // The 1st time: Server address itself
+  //   // The 2nd time: Client address
+  //   // final clientAddress = (request.context['shelf.io.connection_info'] as HttpConnectionInfo?)?.remoteAddress.address;
+  //   // final serverAddress = getIt.get<GlobalScopeData>().currentDeviceIPAddress;
 
-          // Client | Server: response to listener
-          final response = json.encode(updatedMessage.toJson());
-          // channel.sink.add(response);
-          for (final c in channels) {
-            c.sink.add(response);
-          }
+  //   final channels = <WebSocketChannel>[];
+  //   return ws.webSocketHandler((WebSocketChannel channel) {
+  //     channels.add(channel);
+  //     channel.stream.listen((message) {
+  //       try {
+  //         final receivedMessage = Message.fromJson(json.decode(message));
+  //         final updatedMessage =
+  //             receivedMessage.copyWith(messageState: MessageState.sent);
 
-          // Server: add SENT message to stream and provider
-          // Need this since Server is a standalone instance, not go with Client instance;
-          // when Client sends a message, Server also needs to add that message to its own stream instance
-          getIt.get<MessageManagerService>().addMessage(updatedMessage);
-          context.read<ChatProvider>().addMessage(message: updatedMessage);
+  //         // Client | Server: response to listener
+  //         final response = json.encode(updatedMessage.toJson());
+  //         // channel.sink.add(response);
+  //         for (final c in channels) {
+  //           c.sink.add(response);
+  //         }
 
-          // TODO: sending message from server -> client. Client can receive message
-          // send to all connected devices/clients (right socket)
-          // currently, just send it server itself: 192.168.1.5 -> 192.168.1.5 (wrong)
-        } catch (e) {
-          debugPrint('Error while handling incoming message in socket: ${e.toString()}');
-        }
-      }, onDone: () => channels.remove(channel)
-      );
-    })(request);
-  }
+  //         // Server: add SENT message to stream and provider
+  //         // Need this since Server is a standalone instance, not go with Client instance;
+  //         // when Client sends a message, Server also needs to add that message to its own stream instance
+  //         getIt.get<MessageManagerService>().addMessage(updatedMessage);
+  //         context.read<ChatProvider>().addMessage(message: updatedMessage);
+
+  //         // TODO: sending message from server -> client. Client can receive message
+  //         // send to all connected devices/clients (right socket)
+  //         // currently, just send it server itself: 192.168.1.5 -> 192.168.1.5 (wrong)
+  //       } catch (e) {
+  //         debugPrint(
+  //             'Error while handling incoming message in socket: ${e.toString()}');
+  //       }
+  //     }, onDone: () => channels.remove(channel));
+  //   })(request);
+  // }
 
   Future<Response> _uploadFileHandler(Request request, String address) async {
     final contentType = MediaType.parse(request.headers['Content-Type'] ?? '');
-    final transformer = MimeMultipartTransformer(contentType.parameters["boundary"] ?? '');
+    final transformer =
+        MimeMultipartTransformer(contentType.parameters["boundary"] ?? '');
     final parts = transformer.bind(request.read());
     try {
       List<String> listFileName = [];
@@ -507,10 +535,12 @@ class _ServerWidgetState extends State<ServerWidget> {
         final content = part.cast<List<int>>();
 
         // parse file name from header
-        List<String> pairs = part.headers['content-disposition']?.split(";") ?? [];
+        List<String> pairs =
+            part.headers['content-disposition']?.split(";") ?? [];
         final fileName = pairs.map((element) {
-          if(element.contains('filename')) {
-            return element.substring(element.indexOf("=") + 2, element.length - 1);
+          if (element.contains('filename')) {
+            return element.substring(
+                element.indexOf("=") + 2, element.length - 1);
           }
           return '';
         }).firstWhere((element) => element.isNotEmpty);
@@ -526,9 +556,15 @@ class _ServerWidgetState extends State<ServerWidget> {
         await sink.close();
       }
 
+      // Show dialog for new files.
+      if (listFileName.isNotEmpty && mounted) {
+        _showNewFilesDialog(listFileName);
+      }
+
       // response added files
       final listJson = listFileName.map((fileName) {
-        return SharedFile(name: fileName, url: 'http://$address/$fileName').toJson();
+        return SharedFile(name: fileName, url: 'http://$address/$fileName')
+            .toJson();
       }).toList();
       return Response(
         HttpStatus.ok,
@@ -577,7 +613,7 @@ class _ServerWidgetState extends State<ServerWidget> {
     try {
       final openDirPlugin = OpenDir();
       final rs = await openDirPlugin.openNativeDir(path: path);
-      if(rs != null && rs) {
+      if (rs != null && rs) {
         debugPrint('Opened directory: $path');
       } else {
         if (mounted) {
@@ -586,6 +622,62 @@ class _ServerWidgetState extends State<ServerWidget> {
       }
     } on PlatformException catch (e) {
       debugPrint('Failed to open native directory: ${e.message}');
+    }
+  }
+
+  void _showNewFilesDialog(List<String> fileNames) {
+    // Show dialog for multiple files or non-txt files.
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('New files are coming!'),
+          content: const Text('Do you want to open them?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('No, thanks!'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+
+                // Check if there's only one file and open it directly.
+                if (fileNames.length == 1) {
+                  final fileName = fileNames.first;
+                  // Open single file directly, no matter the format.
+                  final filePath = '${_pickedDir.value.path}/$fileName';
+                  await _openFile(filePath);
+                } else {
+                  // Open directory if there are multiple files.
+                  _openNativeDirectory(_fileDirectoryTextController.text);
+                }
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _openFile(String filePath) async {
+    try {
+      final result = await OpenFilex.open(filePath);
+      debugPrint('Open file result: ${result.message}');
+      if (result.type != ResultType.done) {
+        if (mounted) {
+          context.showSnackbar('Failed to open file: ${result.message}');
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to open file: ${e.toString()}');
+      if (mounted) {
+        context.showSnackbar('Failed to open file');
+      }
     }
   }
 }

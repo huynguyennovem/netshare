@@ -34,3 +34,9 @@
 - https://github.com/huynguyennovem/netshare/issues/69: Comma key is displayed instead of dot key on iOS
 - https://github.com/huynguyennovem/netshare/issues/72: Can not pick media files (image, video) in client mode on iOS
 - https://github.com/huynguyennovem/netshare/issues/76: Crashing when hosting file on iOS
+
+## 2.2.0
+🎊 New features
+- Compatible with Flutter 3.38
+- Migrate Android Gradle to Kotlin DSL
+- Send text feature
