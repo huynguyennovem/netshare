@@ -7,6 +7,12 @@ class GlobalScopeData {
   String _connectedIPAddress = '';
   String get connectedIPAddress => _connectedIPAddress;
 
+  String _currentDeviceIPAddress = '';
+  String get currentDeviceIPAddress => _currentDeviceIPAddress;
+
+  String _currentServerHostingPort = '';
+  String get currentServerHostingPort => _currentServerHostingPort;
+
   void updateConnectionStatus({required ConnectionStatus newStatus}) {
     _connectionStatus = newStatus;
   }
@@ -15,8 +21,18 @@ class GlobalScopeData {
     _connectedIPAddress = newIpAddress;
   }
 
+  void updateCurrentDeviceIPAddress({required String newIpAddress}) {
+    _currentDeviceIPAddress = newIpAddress;
+  }
+
+  void updateCurrentServerHostingPort({required String newPort}) {
+    _currentServerHostingPort = newPort;
+  }
+
   void resetAllData() {
     _connectedIPAddress = '';
+    _currentDeviceIPAddress = '';
+    _currentServerHostingPort = '';
     _connectionStatus = ConnectionStatus.idle;
   }
 }

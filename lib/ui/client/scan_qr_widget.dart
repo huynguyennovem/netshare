@@ -10,10 +10,9 @@ import 'package:netshare/provider/connection_provider.dart';
 import 'package:netshare/util/extension.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScanQRWidget extends StatefulWidget {
-
   const ScanQRWidget({Key? key}) : super(key: key);
 
   @override
@@ -23,7 +22,9 @@ class ScanQRWidget extends StatefulWidget {
 class _ScanQRWidgetState extends State<ScanQRWidget> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   final qrScanResult = ValueNotifier('');
-  QRViewController? controller;
+  late final MobileScannerController controller = MobileScannerController(
+    formats: [BarcodeFormat.qrCode],
+  );
 
   Future? _connectedIPFuture;
   StreamSubscription? _connectedIPSubscription;
@@ -34,15 +35,15 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller!.pauseCamera();
+      controller.stop();
     } else if (Platform.isIOS) {
-      controller!.resumeCamera();
+      controller.start();
     }
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    controller.dispose();
     qrScanResult.dispose();
     _connectedIPSubscription?.cancel();
     super.dispose();
@@ -68,11 +69,9 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
                 child: Column(
                   children: [
                     Expanded(
-                      child: QRView(
-                        key: qrKey,
-                        onQRViewCreated: _onQRViewCreated,
-                        formatsAllowed: const [BarcodeFormat.qrcode],
-                        overlay: QrScannerOverlayShape(),
+                      child: MobileScanner(
+                        controller: controller,
+                        onDetect: _onBarcodeScanned,
                       ),
                     ),
                     Container(
@@ -93,7 +92,9 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
                             textAlign: TextAlign.start,
                             style: CommonTextStyle.textStyleNormal.copyWith(
                               fontSize: 18.0,
-                              color: Theme.of(context).colorScheme.primaryContainer,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
                               fontWeight: FontWeight.w400,
                             ),
                           );
@@ -111,10 +112,12 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
                 const SizedBox(width: 24.0),
                 FloatingActionButton.extended(
                   onPressed: () => _onClickConnect(),
-                  icon: const Icon(Icons.router_outlined, color: textIconButtonColor),
+                  icon: const Icon(Icons.router_outlined,
+                      color: textIconButtonColor),
                   label: Text(
                     'Connect',
-                    style: CommonTextStyle.textStyleNormal.copyWith(color: textIconButtonColor),
+                    style: CommonTextStyle.textStyleNormal
+                        .copyWith(color: textIconButtonColor),
                   ),
                 ),
                 const SizedBox(width: 8.0),
@@ -144,14 +147,14 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) async {
-      final code = scanData.code;
-      if (null != code) {
+  void _onBarcodeScanned(BarcodeCapture capture) {
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty) {
+      final code = barcodes.first.rawValue;
+      if (code != null) {
         qrScanResult.value = code;
       }
-    });
+    }
   }
 
   _onClickConnect() {
@@ -170,8 +173,9 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
 
     _connectedIPSubscription?.cancel();
     try {
-      _connectedIPFuture = Socket.connect(ipAddress, port, timeout: const Duration(seconds: 5))
-          .catchError((error) {
+      _connectedIPFuture =
+          Socket.connect(ipAddress, port, timeout: const Duration(seconds: 5))
+              .catchError((error) {
         if (mounted) {
           context.showSnackbar('Failed to connect!');
         }
@@ -192,7 +196,7 @@ class _ScanQRWidgetState extends State<ScanQRWidget> {
       }
       socket.destroy();
 
-      if(mounted && context.canPop()) {
+      if (mounted && context.canPop()) {
         context.pop(true);
       }
     });
