@@ -16,15 +16,26 @@ import 'package:netshare/util/utility_functions.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 
-class SendWidget extends StatefulWidget {
-  const SendWidget({Key? key}) : super(key: key);
+class SendFilesWidget extends StatefulWidget {
+  final List<FileUpload>? initialFiles;
+
+  const SendFilesWidget({Key? key, this.initialFiles}) : super(key: key);
 
   @override
-  State<SendWidget> createState() => _SendWidgetState();
+  State<SendFilesWidget> createState() => _SendFilesWidgetState();
 }
 
-class _SendWidgetState extends State<SendWidget> {
+class _SendFilesWidgetState extends State<SendFilesWidget> {
   List<FileUpload> _pickedFiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialFiles != null) {
+      _pickedFiles = widget.initialFiles!;
+    }
+  }
+
   final ValueNotifier<bool> _isUploading = ValueNotifier(false);
   final ValueNotifier<bool> _draggingNotifier = ValueNotifier<bool>(false);
 
@@ -51,7 +62,7 @@ class _SendWidgetState extends State<SendWidget> {
   }
 
   _buildBody() {
-    if(UtilityFunctions.isMobile) {
+    if (UtilityFunctions.isMobile) {
       return _buildBodyMobile();
     } else {
       return _buildBodyDesktop();
@@ -59,29 +70,29 @@ class _SendWidgetState extends State<SendWidget> {
   }
 
   _buildBodyMobile() => SizedBox(
-    width: double.maxFinite,
-    child: Column(
-      children: [
-        _filePickerButton(),
-        Expanded(child: _mainListFiles()),
-        _buttonUpload(),
-      ],
-    ),
-  );
-
-  _buildBodyDesktop() => Column(
-    children: [
-      Expanded(
-        child: Row(
+        width: double.maxFinite,
+        child: Column(
           children: [
-            _filePickerDragDropSupport(),
+            _filePickerButton(),
             Expanded(child: _mainListFiles()),
+            _buttonUpload(),
           ],
         ),
-      ),
-      _buttonUpload(),
-    ],
-  );
+      );
+
+  _buildBodyDesktop() => Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                _filePickerDragDropSupport(),
+                Expanded(child: _mainListFiles()),
+              ],
+            ),
+          ),
+          _buttonUpload(),
+        ],
+      );
 
   _filePickerDragDropSupport() {
     return DropTarget(
@@ -89,7 +100,8 @@ class _SendWidgetState extends State<SendWidget> {
         setState(() {
           _pickedFiles = _pickedFiles
             ..addAll(detail.files.map((e) => e.toFileUpload).toList());
-          _pickedFiles = _pickedFiles.toSet().toList(); // remove duplicate files
+          _pickedFiles =
+              _pickedFiles.toSet().toList(); // remove duplicate files
         });
       },
       onDragEntered: (detail) {
@@ -106,10 +118,13 @@ class _SendWidgetState extends State<SendWidget> {
               return Container(
                 padding: const EdgeInsets.all(20.0),
                 alignment: Alignment.center,
-                margin: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 32.0, top: 16.0),
+                margin: const EdgeInsets.only(
+                    left: 32.0, right: 32.0, bottom: 32.0, top: 16.0),
                 decoration: ShapeDecoration(
-                  color: isDragging ? Colors.black26.withAlpha(30) : Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  color:
+                      isDragging ? Colors.black26.withAlpha(30) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0)),
                   shadows: const [
                     BoxShadow(
                       offset: Offset(1.5, 2.5),
@@ -125,7 +140,8 @@ class _SendWidgetState extends State<SendWidget> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.file_open_rounded, color: Colors.black38),
+                        const Icon(Icons.file_open_rounded,
+                            color: Colors.black38),
                         Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: Text(
@@ -138,7 +154,8 @@ class _SendWidgetState extends State<SendWidget> {
                       ],
                     ),
                     const SizedBox(height: 8.0),
-                    Text('or',
+                    Text(
+                      'or',
                       style: CommonTextStyle.textStyleNormal.copyWith(
                         color: Colors.black38,
                       ),
@@ -155,25 +172,27 @@ class _SendWidgetState extends State<SendWidget> {
   }
 
   _filePickerButton() => Container(
-    margin: const EdgeInsets.only(top: 16.0),
-    child: MaterialButton(
-      onPressed: () => _pickFile(),
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-      color: Theme.of(context).colorScheme.primary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.add_box, color: Colors.white),
-          const SizedBox(width: 8.0),
-          Text(
-            'Pick files',
-            style: CommonTextStyle.textStyleNormal.copyWith(color: Colors.white),
+        margin: const EdgeInsets.only(top: 16.0),
+        child: MaterialButton(
+          onPressed: () => _pickFile(),
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+          color: Theme.of(context).colorScheme.primary,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add_box, color: Colors.white),
+              const SizedBox(width: 8.0),
+              Text(
+                'Pick files',
+                style: CommonTextStyle.textStyleNormal
+                    .copyWith(color: Colors.white),
+              ),
+            ],
           ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 
   _mainListFiles() => _pickedFiles.isEmpty
       ? const EmptyWidget(message: 'No picked file')
@@ -191,16 +210,17 @@ class _SendWidgetState extends State<SendWidget> {
           itemBuilder: (context, index) {
             final file = _pickedFiles[index];
             return FileTileUpload(
-                  sharedFile: SharedFile(name: path.basename(file.path), url: file.path),
-                  onRemoveItem: () {
-                    setState(() {
-                      final rawList = _pickedFiles;
-                      rawList.removeWhere((element) => element.path == file.path);
-                      _pickedFiles = rawList;
-                    });
-                  },
-                );
+              sharedFile:
+                  SharedFile(name: path.basename(file.path), url: file.path),
+              onRemoveItem: () {
+                setState(() {
+                  final rawList = _pickedFiles;
+                  rawList.removeWhere((element) => element.path == file.path);
+                  _pickedFiles = rawList;
+                });
               },
+            );
+          },
           separatorBuilder: (context, index) {
             return const Divider(color: Colors.black12, height: 1.0);
           },
@@ -211,53 +231,55 @@ class _SendWidgetState extends State<SendWidget> {
   }
 
   _buttonUpload() => Container(
-    margin: const EdgeInsets.only(bottom: 16.0),
-    child: FloatingActionButton.extended(
-      onPressed: () {
-        if(_pickedFiles.isNotEmpty) {
-          _startUploading(context, _pickedFiles);
-        }
-      },
-      label: Row(
-        children: [
-          Text(
-            'Upload files',
-            style: CommonTextStyle.textStyleNormal.copyWith(
-              fontSize: 14.0,
-              color: textIconButtonColor,
-            ),
+        margin: const EdgeInsets.only(bottom: 16.0),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            if (_pickedFiles.isNotEmpty) {
+              _startUploading(context, _pickedFiles);
+            }
+          },
+          label: Row(
+            children: [
+              Text(
+                'Send files',
+                style: CommonTextStyle.textStyleNormal.copyWith(
+                  fontSize: 14.0,
+                  color: textIconButtonColor,
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              ValueListenableBuilder(
+                valueListenable: _isUploading,
+                builder: (context, value, child) => value
+                    ? const SizedBox(
+                        width: 16.0,
+                        height: 16.0,
+                        child: CircularProgressIndicator(strokeWidth: 2.0),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
           ),
-          const SizedBox(width: 8.0),
-          ValueListenableBuilder(
-            valueListenable: _isUploading,
-            builder: (context, value, child) => value
-                ? const SizedBox(
-                    width: 16.0,
-                    height: 16.0,
-                    child: CircularProgressIndicator(strokeWidth: 2.0),
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-      icon: const Icon(Icons.upload, color: textIconButtonColor),
-    ),
-  );
+          icon: const Icon(Icons.upload, color: textIconButtonColor),
+        ),
+      );
 
   void _pickFile() async {
     FileType type = FileType.any;
-    if(Platform.isIOS) {
+    if (Platform.isIOS) {
       type = FileType.media;
     }
     _processPickingFile(type);
   }
 
   void _processPickingFile(type) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true, type: type);
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(allowMultiple: true, type: type);
     if (result != null) {
       setState(() {
         _pickedFiles = _pickedFiles
-          ..addAll(result.paths.where((element) => element != null)
+          ..addAll(result.paths
+              .where((element) => element != null)
               .map((e) => FileUpload(e!))
               .toList());
         _pickedFiles = _pickedFiles.toSet().toList(); // remove duplicate files
@@ -275,9 +297,12 @@ class _SendWidgetState extends State<SendWidget> {
       },
       (r) {
         context.showSnackbar('Upload successful');
-        context.read<FileProvider>().addAllSharedFiles(sharedFiles: r.toSet(), isAppending: true);
+        context
+            .read<FileProvider>()
+            .addAllSharedFiles(sharedFiles: r.toSet(), isAppending: true);
 
-        Future.delayed(const Duration(seconds: 1), () => Navigator.of(context).pop());
+        Future.delayed(
+            const Duration(seconds: 1), () => Navigator.of(context).pop());
       },
     );
 
@@ -291,5 +316,17 @@ class _SendWidgetState extends State<SendWidget> {
       _isUploading.value = false;
     }
   }
+}
 
+/// Wrapper class to allow passing a single initial file to SendWidget.
+class SendWidgetWithFile extends StatelessWidget {
+  final FileUpload initialFile;
+
+  const SendWidgetWithFile({Key? key, required this.initialFile})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SendFilesWidget(initialFiles: [initialFile]);
+  }
 }
