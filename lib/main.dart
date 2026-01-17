@@ -21,10 +21,13 @@ import 'package:netshare/util/utility_functions.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/ui/send/uploading_widget.dart';
 
+import 'data/preload_data.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initPlugins();
   setupDI();
+  await PreloadData.inject();
   runApp(const MyApp());
 }
 
@@ -41,7 +44,8 @@ class _MyAppState extends State<MyApp> {
 
   final GoRouter _router = GoRouter(
     navigatorKey: _navigatorKey,
-    errorBuilder: (BuildContext context, GoRouterState state) => ErrorWidget(state.error!),
+    errorBuilder: (BuildContext context, GoRouterState state) =>
+        ErrorWidget(state.error!),
     routes: <GoRoute>[
       GoRoute(
         path: mRootPath,
@@ -71,7 +75,8 @@ class _MyAppState extends State<MyApp> {
           GoRoute(
             name: mSendPath,
             path: mSendPath,
-            builder: (BuildContext context, GoRouterState state) => const SendWidget(),
+            builder: (BuildContext context, GoRouterState state) =>
+                const SendWidget(),
             routes: [
               GoRoute(
                 name: mUploadingPath,
@@ -88,7 +93,8 @@ class _MyAppState extends State<MyApp> {
           GoRoute(
             name: mScanningPath,
             path: mScanningPath,
-            builder: (BuildContext context, GoRouterState state) => const ScanQRWidget(),
+            builder: (BuildContext context, GoRouterState state) =>
+                const ScanQRWidget(),
           ),
         ],
       ),
@@ -110,12 +116,19 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           useMaterial3: true,
           appBarTheme: const AppBarTheme(color: backgroundColor),
-          colorScheme: ColorScheme.fromSeed(seedColor: seedColor, background: backgroundColor),
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: seedColor, background: backgroundColor),
+          iconButtonTheme: const IconButtonThemeData(
+            style: ButtonStyle(
+              iconColor: MaterialStatePropertyAll<Color>(textIconButtonColor),
+            ),
+          ),
         ),
         routerConfig: _router,
         builder: (context, child) {
           // Handle keyboard listener here
-          RawKeyboard.instance.addListener((RawKeyEvent value) => _handleKeyEvent(value));
+          RawKeyboard.instance
+              .addListener((RawKeyEvent value) => _handleKeyEvent(value));
           return child ?? const SizedBox.shrink();
         },
       ),
@@ -123,16 +136,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleKeyEvent(RawKeyEvent value) async {
-    if (!_isKeyboardListenerEnabled)  return;
+    if (!_isKeyboardListenerEnabled) return;
 
     // If user pressed Command/Control + W keys, quit the app
     if (value.isMetaPressed && value.logicalKey == LogicalKeyboardKey.keyW ||
         value.isControlPressed && value.logicalKey == LogicalKeyboardKey.keyW) {
-
-      if(_navigatorKey.currentContext == null) return;
+      if (_navigatorKey.currentContext == null) return;
 
       // show confirm dialog
-      _showQuitAppConfirmationDialog(_navigatorKey.currentContext!, (confirmCallback) {
+      _showQuitAppConfirmationDialog(_navigatorKey.currentContext!,
+          (confirmCallback) {
         if (confirmCallback) {
           SystemNavigator.pop(); // Quit the app
         }
@@ -142,7 +155,8 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _showQuitAppConfirmationDialog(BuildContext context, Function(bool)? confirmCallback) {
+  void _showQuitAppConfirmationDialog(
+      BuildContext context, Function(bool)? confirmCallback) {
     // Disable the keyboard listener.
     _isKeyboardListenerEnabled = false;
 
