@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_drop
-  network_info_plus
   open_dir_windows
   permission_handler_windows
   share_plus
