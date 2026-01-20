@@ -17,7 +17,8 @@ class QRMenuPopup extends StatefulWidget {
   State<QRMenuPopup> createState() => _QRMenuPopupState();
 }
 
-class _QRMenuPopupState extends State<QRMenuPopup> with SingleTickerProviderStateMixin {
+class _QRMenuPopupState extends State<QRMenuPopup>
+    with SingleTickerProviderStateMixin {
   OverlayEntry? overlayEntry;
   final GlobalKey _buttonKey = GlobalKey();
 
@@ -40,8 +41,7 @@ class _QRMenuPopupState extends State<QRMenuPopup> with SingleTickerProviderStat
               blurRadius: 8.0,
               color: Colors.black26,
             ),
-          ]
-      ),
+          ]),
       child: IconButton(
         key: _buttonKey,
         onPressed: () => _onClickQRCode(),
@@ -49,7 +49,8 @@ class _QRMenuPopupState extends State<QRMenuPopup> with SingleTickerProviderStat
         iconSize: 24.0,
         icon: Padding(
           padding: const EdgeInsets.all(4.0),
-          child: Icon(Icons.qr_code, color: Theme.of(context).colorScheme.primary),
+          child:
+              Icon(Icons.qr_code, color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );
@@ -73,18 +74,38 @@ class _QRMenuPopupState extends State<QRMenuPopup> with SingleTickerProviderStat
                 _buttonKey.currentContext?.findRenderObject() as RenderBox;
             final buttonSize = buttonRenderBox.size;
             final buttonPosition = buttonRenderBox.localToGlobal(Offset.zero);
+
+            // Calculate the desired left position.
+            double calculatedLeft =
+                buttonPosition.dx - qrSize + buttonSize.height * 2.0;
+
+            // Ensure the QR popup stays within screen bounds.
+            // Add padding to prevent touching the edge.
+            const edgePadding = 8.0;
+
+            // Check if it would overflow on the right.
+            if (calculatedLeft + qrSize > constraints.maxWidth - edgePadding) {
+              calculatedLeft = constraints.maxWidth - qrSize - edgePadding;
+            }
+
+            // Check if it would overflow on the left.
+            if (calculatedLeft < edgePadding) {
+              calculatedLeft = edgePadding;
+            }
+
             return Stack(
               children: [
                 Positioned(
                   top: buttonPosition.dy + buttonSize.height * 1.5,
-                  left: buttonPosition.dx - qrSize + buttonSize.height * 2.0,
+                  left: calculatedLeft,
                   child: SizedBox(
                     width: qrSize,
                     height: qrSize,
                     child: Container(
                       decoration: ShapeDecoration(
                           color: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0)),
                           shadows: const [
                             BoxShadow(
                               offset: Offset(1.5, 2.5),
