@@ -626,6 +626,10 @@ class _ServerWidgetState extends State<ServerWidget> {
   }
 
   void _showNewFilesDialog(List<String> fileNames) {
+    // Check if all files are text files.
+    final allTextFiles =
+        fileNames.every((fileName) => fileName.toLowerCase().endsWith('.txt'));
+
     // Show dialog for multiple files or non-txt files.
     showDialog(
       barrierDismissible: false,
@@ -633,13 +637,13 @@ class _ServerWidgetState extends State<ServerWidget> {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('New files are coming!'),
-          content: const Text('Do you want to open them?'),
+          content: const Text('Do you want to?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text('No, thanks!'),
+              child: const Text('Nothing'),
             ),
             TextButton(
               onPressed: () async {
@@ -656,8 +660,19 @@ class _ServerWidgetState extends State<ServerWidget> {
                   _openNativeDirectory(_fileDirectoryTextController.text);
                 }
               },
-              child: const Text('Yes'),
+              child: const Text('Open it'),
             ),
+            // Copy contents to clipboard if there's only one file and it's a text file.
+            if (fileNames.length == 1 && allTextFiles)
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop();
+
+                  // Copy contents to clipboard.
+                  await _copyFileContentsToClipboard(fileNames);
+                },
+                child: const Text('Copy contents'),
+              ),
           ],
         );
       },
@@ -677,6 +692,40 @@ class _ServerWidgetState extends State<ServerWidget> {
       debugPrint('Failed to open file: ${e.toString()}');
       if (mounted) {
         context.showSnackbar('Failed to open file');
+      }
+    }
+  }
+
+  Future<void> _copyFileContentsToClipboard(List<String> fileNames) async {
+    try {
+      // Since this is only called for single text files, get the first file.
+      final fileName = fileNames.first;
+      final filePath = '${_pickedDir.value.path}/$fileName';
+      final file = File(filePath);
+
+      if (await file.exists()) {
+        final content = await file.readAsString();
+
+        if (content.isNotEmpty) {
+          await Clipboard.setData(ClipboardData(text: content));
+          if (mounted) {
+            context.showSnackbar('File content copied to clipboard!');
+          }
+        } else {
+          if (mounted) {
+            context.showSnackbar('File is empty');
+          }
+        }
+      } else {
+        debugPrint('File not found: $filePath');
+        if (mounted) {
+          context.showSnackbar('File not found');
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to copy file contents: ${e.toString()}');
+      if (mounted) {
+        context.showSnackbar('Failed to copy file contents');
       }
     }
   }
