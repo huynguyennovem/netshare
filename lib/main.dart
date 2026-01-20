@@ -20,12 +20,31 @@ import 'package:netshare/ui/server/server_widget.dart';
 import 'package:netshare/util/utility_functions.dart';
 import 'package:netshare/config/constants.dart';
 import 'package:netshare/ui/send/uploading_widget.dart';
+import 'package:netshare/manager/system_tray_manager.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initPlugins();
   setupDI();
   await PreloadData.inject();
+
+  if (UtilityFunctions.isDesktop) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(800, 600),
+      center: true,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.normal,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+      await windowManager.setPreventClose(true);
+    });
+    await SystemTrayManager().init();
+  }
+
   runApp(const MyApp());
 }
 
@@ -38,7 +57,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WindowListener {
   final GoRouter _router = GoRouter(
     navigatorKey: _navigatorKey,
     errorBuilder: (BuildContext context, GoRouterState state) =>
@@ -100,6 +119,29 @@ class _MyAppState extends State<MyApp> {
   bool _isKeyboardListenerEnabled = true;
 
   @override
+  void initState() {
+    super.initState();
+    if (UtilityFunctions.isDesktop) {
+      windowManager.addListener(this);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (UtilityFunctions.isDesktop) {
+      windowManager.removeListener(this);
+      SystemTrayManager().dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  void onWindowClose() async {
+    // Hide window instead of closing it.
+    await windowManager.hide();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -143,9 +185,10 @@ class _MyAppState extends State<MyApp> {
 
       // show confirm dialog
       _showQuitAppConfirmationDialog(_navigatorKey.currentContext!,
-          (confirmCallback) {
+          (confirmCallback) async {
         if (confirmCallback) {
-          SystemNavigator.pop(); // Quit the app
+          // SystemNavigator.pop(); // Quit the app
+          await windowManager.hide();
         }
         // listen keyboard again
         _isKeyboardListenerEnabled = true;
