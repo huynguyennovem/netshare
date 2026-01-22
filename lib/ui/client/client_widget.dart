@@ -36,6 +36,7 @@ class ClientWidget extends StatefulWidget {
   State<ClientWidget> createState() => _ClientWidgetState();
 }
 
+@pragma("vm:entry-point")
 class _ClientWidgetState extends State<ClientWidget> {
 
   final ReceivePort _port = ReceivePort();
