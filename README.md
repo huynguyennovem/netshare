@@ -62,5 +62,33 @@ To keep iOS app persisting on your device, recommend running it in release mode:
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
+## License
+
+The core source code of this project is licensed under the
+[Apache License 2.0](LICENSE).
+
+You are free to use, modify, and distribute the code in compliance
+with the license terms.
+
+## Trademark & Branding
+
+While the source code is open source, the **project name, logo, and branding**
+are **not** covered by the Apache License.
+
+Please read our [Trademark Policy](TRADEMARK.md) before:
+- Publishing applications to app stores
+- Using the project name in product titles
+- Reusing logos, icons, or screenshots
+
+In short:
+> You may fork the code.  
+> You can not impersonate the official project.
+
+## Official Builds
+
+Only builds published by **Huy Nguyen** are considered official.
+
+If you encounter applications claiming to be official but not listed here,
+please report them.
 
 
