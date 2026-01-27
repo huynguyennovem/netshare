@@ -7,6 +7,12 @@ Data sharing in local network
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I7LA2DY)
 
+<p align="left">
+  <a href="https://buymeacoffee.com/huynguyennovem">
+    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" />
+  </a>
+</p>
+
 ## Demo (Screenshots, Videos)
 
 ### Mobile
